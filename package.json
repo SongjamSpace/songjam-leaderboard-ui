@@ -33,6 +33,7 @@
   "dependencies": {
     "@dynamic-labs/ethereum": "^4.12.1",
     "@dynamic-labs/ethers-v6": "^4.12.1",
+    "@dynamic-labs/sdk-api": "^0.0.715",
     "@dynamic-labs/sdk-react-core": "^4.12.1",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",

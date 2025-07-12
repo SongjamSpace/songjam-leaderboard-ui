@@ -9,12 +9,15 @@ import {
   Button,
   Icon,
   LinearProgress,
+  Dialog,
 } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { useAuthContext } from './contexts/AuthContext';
-import { useSocialAccounts } from '@dynamic-labs/sdk-react-core';
-import { useWallet } from './hooks/useWallet';
+// import { useAuthContext } from './contexts/AuthContext';
+import {
+  DynamicEmbeddedWidget,
+  useDynamicContext,
+} from '@dynamic-labs/sdk-react-core';
 import {
   getElytraStakingStatus,
   ElytraStakingInfo,
@@ -22,52 +25,52 @@ import {
 import { ProviderEnum } from '@dynamic-labs/sdk-api-core';
 import toast from 'react-hot-toast';
 import { createElytraStakerDoc } from './services/db/elytraStakers.service';
+import {
+  signInWithPopup,
+  TwitterAuthProvider,
+  onAuthStateChanged,
+  User,
+} from 'firebase/auth';
+import { auth } from './services/firebase.service';
 
-export default function App() {
+interface AppProps {
+  onChangeLoginView: (value: 'twitter' | 'web3') => void;
+}
+
+export default function App({ onChangeLoginView }: AppProps) {
   const [searchParams] = useSearchParams();
-  const { user, loading: isAuthLoading } = useAuthContext();
-  const { signInWithSocialAccount } = useSocialAccounts();
-  const { connectWallet, isConnected, address, isConnecting } = useWallet();
-
   const [stakingInfo, setStakingInfo] = useState<ElytraStakingInfo | null>(
     null
   );
   const [isCheckingStake, setIsCheckingStake] = useState(false);
-  const [hasAutoConnected, setHasAutoConnected] = useState(false);
+  const { primaryWallet } = useDynamicContext();
+  const [twitterUser, setTwitterUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setTwitterUser(user);
+      }
+    });
+  }, []);
 
   // Get the id parameter from URL
   const idParam = searchParams.get('id');
 
-  // Auto-connect to Base network on component mount
-  useEffect(() => {
-    const autoConnect = async () => {
-      if (!hasAutoConnected && !isConnected && !isConnecting) {
-        setHasAutoConnected(true);
-        try {
-          await connectWallet('base');
-        } catch (error) {
-          console.error('Connect failed:', error);
-          toast.error(
-            error instanceof Error ? error.message : 'Auto-connect failed'
-          );
-        }
-      }
-    };
-
-    autoConnect();
-  }, [hasAutoConnected, isConnected, isConnecting, connectWallet]);
-
-  // Check staking status when wallet is connected
+  // // Check staking status when wallet is connected
   useEffect(() => {
     const checkStaking = async () => {
-      if (isConnected && address && !stakingInfo && !isCheckingStake) {
+      if (primaryWallet?.address && !stakingInfo && !isCheckingStake) {
         setIsCheckingStake(true);
         try {
-          const info = await getElytraStakingStatus(address, 8453); // Base chainId
+          const info = await getElytraStakingStatus(
+            primaryWallet.address,
+            8453
+          ); // Base chainId
           setStakingInfo(info);
           setIsCheckingStake(false);
 
-          if (info.hasMinimumStake && !user) {
+          if (info.hasMinimumStake && !twitterUser) {
             // Auto-start X login if they have sufficient tokens
             try {
               // await signInWithSocialAccount(ProviderEnum.Twitter, {
@@ -86,10 +89,10 @@ export default function App() {
     };
 
     checkStaking();
-  }, [address]);
+  }, [primaryWallet]);
 
   const renderContent = () => {
-    if (!isConnected) {
+    if (!primaryWallet) {
       return (
         <Box sx={{ textAlign: 'center' }}>
           <LinearProgress />
@@ -123,19 +126,19 @@ export default function App() {
       );
     }
 
-    if (isAuthLoading) {
-      return (
-        <Box sx={{ textAlign: 'center' }}>
-          <LinearProgress />
-        </Box>
-      );
-    }
+    // if (isAuthLoading) {
+    //   return (
+    //     <Box sx={{ textAlign: 'center' }}>
+    //       <LinearProgress />
+    //     </Box>
+    //   );
+    // }
 
     if (stakingInfo) {
       if (stakingInfo.hasMinimumStake) {
         return (
           <Box sx={{ textAlign: 'center' }}>
-            {!user && (
+            {!twitterUser && (
               <Alert severity="success" sx={{ mb: 3, textAlign: 'left' }}>
                 <Typography variant="h6" sx={{ mb: 1 }}>
                   ✅ Success! You have sufficient $ELYTRA tokens staked
@@ -148,7 +151,7 @@ export default function App() {
               </Alert>
             )}
 
-            {!user ? (
+            {!twitterUser ? (
               <Box>
                 <Typography variant="h6" sx={{ color: 'white', mb: 3 }}>
                   Connect your X account to access the leaderboard
@@ -157,10 +160,14 @@ export default function App() {
                   variant="contained"
                   size="large"
                   onClick={async () => {
+                    // onChangeLoginView('twitter');
+                    // setShowDynamicAuth(true);
                     try {
-                      await signInWithSocialAccount(ProviderEnum.Twitter, {
-                        redirectUrl: window.location.href,
-                      });
+                      const userCreds = await signInWithPopup(
+                        auth,
+                        new TwitterAuthProvider()
+                      );
+                      setTwitterUser(userCreds.user);
                     } catch (error) {
                       console.error('Error signing in with Twitter:', error);
                       toast.error('Failed to connect X account');
@@ -188,27 +195,30 @@ export default function App() {
                   Welcome to the ELYTRA Leaderboard!
                 </Typography>
                 <Typography variant="body2">
-                  Your X account @{user.username} is now connected and you're
-                  ready to participate in the leaderboard.
+                  Your X account @
+                  {(twitterUser as any).reloadUserInfo?.screenName ||
+                    twitterUser.displayName}{' '}
+                  is now connected and you're ready to participate in the
+                  leaderboard.
                 </Typography>
               </Alert>
             )}
 
-            {user && stakingInfo.hasMinimumStake && (
+            {twitterUser && stakingInfo.hasMinimumStake && (
               <Button
                 variant="contained"
                 size="small"
                 onClick={async () => {
-                  if (!address || !user) {
+                  if (!primaryWallet?.address || !twitterUser) {
                     toast.error('Failed to create staker document');
                     return;
                   }
                   // TODO: Implement leaderboard join logic
                   const isExists = await createElytraStakerDoc(
-                    address,
-                    user.uid,
-                    user.username,
-                    user.displayName
+                    primaryWallet.address,
+                    twitterUser.uid,
+                    (twitterUser as any).reloadUserInfo?.screenName,
+                    twitterUser.displayName
                   );
                   if (isExists) {
                     toast.error('Already whitelisted');
@@ -397,6 +407,9 @@ export default function App() {
       </Container>
 
       <Toaster position="bottom-center" />
+      <Dialog open={!primaryWallet} onClose={() => {}} maxWidth="sm">
+        <DynamicEmbeddedWidget background="default" style={{ width: 350 }} />
+      </Dialog>
     </Box>
   );
 }
