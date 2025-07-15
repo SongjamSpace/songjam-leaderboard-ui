@@ -8,15 +8,19 @@ export type ElytraStakerDoc = {
   name: string | null;
 };
 
-const ELYTRA_STAKERS_COLLECTION = 'elytraStakers';
-
 export const createElytraStakerDoc = async (
   walletAddress: string,
   userId: string,
   username: string | null,
   name: string | null
 ): Promise<boolean> => {
-  const ss = doc(db, ELYTRA_STAKERS_COLLECTION, walletAddress);
+  const ss = doc(
+    db,
+    'leaderboard_projects',
+    'elytra_virtual',
+    'whitelistedUsers',
+    walletAddress
+  );
   const docSs = await getDoc(ss);
   if (docSs.exists()) {
     return true;

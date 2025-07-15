@@ -22,7 +22,6 @@ import {
   getElytraStakingStatus,
   ElytraStakingInfo,
 } from './services/elytra.service';
-import { ProviderEnum } from '@dynamic-labs/sdk-api-core';
 import toast from 'react-hot-toast';
 import { createElytraStakerDoc } from './services/db/elytraStakers.service';
 import {
@@ -204,55 +203,55 @@ export default function App({ onChangeLoginView }: AppProps) {
               </Alert>
             )}
 
-            {twitterUser && stakingInfo.hasMinimumStake && (
-              <Button
-                variant="contained"
-                size="small"
-                onClick={async () => {
-                  if (!primaryWallet?.address || !twitterUser) {
-                    toast.error('Failed to create staker document');
-                    return;
-                  }
-                  // TODO: Implement leaderboard join logic
-                  const isExists = await createElytraStakerDoc(
-                    primaryWallet.address,
-                    twitterUser.uid,
-                    (twitterUser as any).reloadUserInfo?.screenName,
-                    twitterUser.displayName
-                  );
-                  if (isExists) {
-                    toast.error('Already whitelisted');
-                  } else {
-                    toast.success('Welcome to the ELYTRA Leaderboard!');
-                  }
-                  window.close();
-                }}
-                // sx={{
-                //   background: 'linear-gradient(135deg, #10b981, #059669)',
-                //   py: 2,
-                //   px: 4,
-                //   borderRadius: 2,
-                //   fontSize: '1.1rem',
-                //   fontWeight: 600,
-                //   '&:hover': {
-                //     background: 'linear-gradient(135deg, #059669, #047857)',
-                //   },
-                // }}
-                startIcon={
-                  <Box
-                    component="svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" />
-                  </Box>
+            {/* {twitterUser && stakingInfo.hasMinimumStake && ( */}
+            <Button
+              variant="contained"
+              size="small"
+              onClick={async () => {
+                if (!primaryWallet?.address || !twitterUser) {
+                  toast.error('Failed to create staker document');
+                  return;
                 }
-              >
-                Join Leaderboard
-              </Button>
-            )}
+                // TODO: Implement leaderboard join logic
+                const isExists = await createElytraStakerDoc(
+                  primaryWallet.address,
+                  twitterUser.uid,
+                  (twitterUser as any).reloadUserInfo?.screenName,
+                  twitterUser.displayName
+                );
+                if (isExists) {
+                  toast.error('Already whitelisted');
+                } else {
+                  toast.success('Welcome to the ELYTRA Leaderboard!');
+                }
+                window.close();
+              }}
+              // sx={{
+              //   background: 'linear-gradient(135deg, #10b981, #059669)',
+              //   py: 2,
+              //   px: 4,
+              //   borderRadius: 2,
+              //   fontSize: '1.1rem',
+              //   fontWeight: 600,
+              //   '&:hover': {
+              //     background: 'linear-gradient(135deg, #059669, #047857)',
+              //   },
+              // }}
+              startIcon={
+                <Box
+                  component="svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" />
+                </Box>
+              }
+            >
+              Join Leaderboard
+            </Button>
+            {/* )} */}
           </Box>
         );
       } else {
