@@ -51,7 +51,7 @@ const ClaimSangTokens = () => {
   const { primaryWallet } = useDynamicContext();
 
   const checkIfUserIsLeaderboardMember = async (userId: string) => {
-    const lbData = await userIdExistsInLeaderboard('1717491522482913280');
+    const lbData = await userIdExistsInLeaderboard(userId);
     setIsLeaderboardMember(!!lbData);
     setUserLbData(lbData as { totalPoints: number } | null);
   };
@@ -193,7 +193,7 @@ const ClaimSangTokens = () => {
             Songjam Pre-Genesis Claim
           </Typography>
 
-          {twitterUser ? (
+          {twitterUser && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Avatar
                 src={twitterUser?.photoURL || undefined}
@@ -222,14 +222,6 @@ const ClaimSangTokens = () => {
                 Sign Out
               </Button>
             </Box>
-          ) : (
-            <Button
-              variant="contained"
-              onClick={handleTwitterSignIn}
-              sx={{ color: 'white' }}
-            >
-              Sign in with X
-            </Button>
           )}
         </Box>
 
@@ -303,7 +295,7 @@ const ClaimSangTokens = () => {
                 textAlign: 'center',
               }}
             >
-              {primaryWallet ? (
+              {primaryWallet && twitterUser ? (
                 <>
                   <Typography
                     variant="h5"
@@ -475,7 +467,72 @@ const ClaimSangTokens = () => {
               </Typography>
             </Paper>
           </Box>
-        ) : null}
+        ) : (
+          <Box
+            sx={{
+              mt: 6,
+              display: 'flex',
+              justifyContent: 'center',
+            }}
+          >
+            <Paper
+              sx={{
+                p: 4,
+                background: 'rgba(0, 0, 0, 0.3)',
+                borderRadius: '15px',
+                border: '1px solid #8B5CF6',
+                maxWidth: 600,
+                width: '100%',
+                textAlign: 'center',
+              }}
+            >
+              <Typography
+                variant="h5"
+                sx={{
+                  color: 'white',
+                  mb: 2,
+                  fontWeight: 'bold',
+                }}
+              >
+                Are You Part of the Pre-Genesis Leaderboard?
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  mb: 3,
+                  lineHeight: 1.6,
+                }}
+              >
+                Sign in with your X (Twitter) account to check if you're
+                eligible for the $SANG token airdrop. Only participants from the
+                Songjam Pre-Genesis campaign can claim tokens.
+              </Typography>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={handleTwitterSignIn}
+                sx={{
+                  background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
+                  color: 'white',
+                  px: 4,
+                  py: 2,
+                  borderRadius: '25px',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  fontSize: '1.1rem',
+                  boxShadow: '0 4px 15px rgba(139, 92, 246, 0.3)',
+                  '&:hover': {
+                    background: 'linear-gradient(45deg, #7c3aed, #db2777)',
+                    boxShadow: '0 6px 20px rgba(139, 92, 246, 0.4)',
+                  },
+                }}
+              >
+                Sign in with X
+              </Button>
+            </Paper>
+          </Box>
+        )}
         {/* Leaderboard Section */}
         {/* <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
           <Box sx={{ width: '100%', maxWidth: '1200px' }}>
