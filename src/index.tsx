@@ -1,10 +1,10 @@
 import React, { Suspense, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import './App.css';
+import ClaimSangTokens from './pages/ClaimSangTokens';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from './theme';
-import { AuthProvider } from './contexts/AuthContext';
 import { DynamicContextProvider } from '@dynamic-labs/sdk-react-core';
 import WebFont from 'webfontloader';
 import { EthereumWalletConnectors } from '@dynamic-labs/ethereum';
@@ -13,22 +13,13 @@ import {
   SdkViewSectionType,
   SdkViewType,
 } from '@dynamic-labs/sdk-api';
+import Elytra from './pages/Elytra';
 
 WebFont.load({
   google: {
     families: ['Chakra Petch:400,700&display=swap'],
   },
 });
-
-const TWITTER_VIEW = {
-  type: SdkViewType.Login,
-  sections: [
-    {
-      type: SdkViewSectionType.Social,
-      defaultItem: 'twitter',
-    },
-  ],
-};
 
 const WEB3_VIEW = {
   type: SdkViewType.Login,
@@ -72,20 +63,9 @@ function DynamicWrapper() {
       <ThemeProvider theme={theme}>
         {/* <AuthProvider> */}
         <Routes>
-          <Route
-            path="/"
-            element={
-              <App
-                onChangeLoginView={(type: 'twitter' | 'web3') => {
-                  if (type === 'twitter') {
-                    setViewOverrides(TWITTER_VIEW);
-                  } else {
-                    setViewOverrides(WEB3_VIEW);
-                  }
-                }}
-              />
-            }
-          />
+          <Route path="/claim-sang" element={<ClaimSangTokens />} />
+          <Route path="/" element={<Elytra />} />
+          <Route path="/elytra" element={<Elytra />} />
         </Routes>
         {/* </AuthProvider> */}
       </ThemeProvider>

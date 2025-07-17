@@ -61,10 +61,10 @@ const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: '12px',
+          borderRadius: '8px',
           textTransform: 'none',
           fontWeight: 600,
-          padding: '12px 24px',
+          padding: '10px 20px',
           transition: 'all 0.3s ease',
           backdropFilter: 'blur(8px)',
           '&:hover': {
