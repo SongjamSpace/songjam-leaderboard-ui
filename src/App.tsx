@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-// import { useAuthContext } from './contexts/AuthContext';
 import {
   DynamicEmbeddedWidget,
   useDynamicContext,
