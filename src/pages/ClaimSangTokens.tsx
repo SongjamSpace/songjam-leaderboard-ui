@@ -561,7 +561,7 @@ const ClaimSangTokens = () => {
                 letterSpacing: 1,
               }}
             >
-              Stake Songjam
+              Stake $SANG
             </Typography>
             <Typography variant="body1" sx={{ color: '#fcfbfe', mb: 3, opacity: 0.85 }}>
               Stake via{' '}
