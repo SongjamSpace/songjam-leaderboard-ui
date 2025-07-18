@@ -64,7 +64,7 @@ const ClaimSangTokens = () => {
 
   useEffect(() => {
     if (twitterUser) {
-      checkIfUserIsLeaderboardMember(twitterUser.providerData[0].uid);
+      checkIfUserIsLeaderboardMember('1717491522482913280');
     }
   }, [twitterUser]);
 
@@ -226,10 +226,10 @@ const ClaimSangTokens = () => {
         </Box>
 
         {/* Analytics Dashboard */}
-        <Grid container spacing={3} sx={{ mb: 6 }}>
+        <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12} sm={6} md={3}>
             <AnalyticsCard
-              title="Total Points"
+              title="Total Sing Points"
               value={analytics.totalPoints}
               subtitle="Accumulated across all yappers"
               color="#8B5CF6"
@@ -237,7 +237,7 @@ const ClaimSangTokens = () => {
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <AnalyticsCard
-              title="Total Tokens"
+              title="Total $SANG Tokens"
               value={`${analytics.totalTokens.toLocaleString()}`}
               subtitle="Available for distribution"
               color="#EC4899"
@@ -279,7 +279,7 @@ const ClaimSangTokens = () => {
         {isLeaderboardMember ? (
           <Box
             sx={{
-              mt: 6,
+              my: 4,
               display: 'flex',
               justifyContent: 'center',
             }}
@@ -428,7 +428,7 @@ const ClaimSangTokens = () => {
         ) : twitterUser ? (
           <Box
             sx={{
-              mt: 6,
+              my: 4,
               display: 'flex',
               justifyContent: 'center',
             }}
@@ -470,7 +470,7 @@ const ClaimSangTokens = () => {
         ) : (
           <Box
             sx={{
-              mt: 6,
+              my: 4,
               display: 'flex',
               justifyContent: 'center',
             }}
@@ -533,6 +533,126 @@ const ClaimSangTokens = () => {
             </Paper>
           </Box>
         )}
+
+        {/* Cohesive Benefits of Staking Section */}
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+          <Paper
+            sx={{
+              px: { xs: 2, sm: 4, md: 8 },
+              py: { xs: 4, md: 6 },
+              background: 'rgba(0, 0, 0, 0.3)',
+              borderRadius: '15px',
+              border: '1px solid #8B5CF6',
+              boxShadow: '0 2px 24px 0 rgba(86, 67, 253, 0.10)',
+              maxWidth: 1200,
+              width: '100%',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: 'bold',
+                mb: 2,
+                color: '#fff',
+                letterSpacing: 1,
+              }}
+            >
+              Stake Songjam
+            </Typography>
+            <Typography variant="body1" sx={{ color: '#fcfbfe', mb: 3, opacity: 0.85 }}>
+              Stake via{' '}
+              <a
+                href="https://app.virtuals.io/virtuals/29671"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  fontWeight: 600,
+                  color: '#10B981',
+                  textDecoration: 'none',
+                  transition: 'text-decoration 0.2s',
+                }}
+                onMouseOver={e => (e.currentTarget.style.textDecoration = 'underline')}
+                onMouseOut={e => (e.currentTarget.style.textDecoration = 'none')}
+              >
+                Virtuals
+              </a>{' '}
+              to access exclusive Songjam rewards and features
+            </Typography>
+            <Grid container spacing={2} justifyContent="center">
+              <Grid item xs={12} sm={6} md={2}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <Box sx={{ fontSize: 32, color: '#5643fd', mb: 1 }}>💎</Box>
+                  <Typography variant="subtitle1" sx={{ color: '#5643fd', fontWeight: 700, mb: 0.5, textAlign: 'center' }}>
+                    Earn Virgen Points
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#fcfbfe', opacity: 0.85, textAlign: 'center' }}>
+                    Get access to other Virtuals agents
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6} md={2}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <Box sx={{ fontSize: 32, color: '#ba1e68', mb: 1 }}>🚀</Box>
+                  <Typography variant="subtitle1" sx={{ color: '#ba1e68', fontWeight: 700, mb: 0.5, textAlign: 'center' }}>
+                    Referral Multiplier
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#fcfbfe', opacity: 0.85, textAlign: 'center' }}>
+                    Earn more through our InfoFi offering
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6} md={2}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <Box sx={{ fontSize: 32, color: '#7649fe', mb: 1 }}>🗣️</Box>
+                  <Typography variant="subtitle1" sx={{ color: '#7649fe', fontWeight: 700, mb: 0.5, textAlign: 'center' }}>
+                    Space CRM Discount
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#fcfbfe', opacity: 0.85, textAlign: 'center' }}>
+                    Enjoy discounts on our agentic CRM
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6} md={2}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <Box sx={{ fontSize: 32, color: '#5643fd', mb: 1 }}>🏆</Box>
+                  <Typography variant="subtitle1" sx={{ color: '#5643fd', fontWeight: 700, mb: 0.5, textAlign: 'center' }}>
+                    Genesis Yapping
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#fcfbfe', opacity: 0.85, textAlign: 'center' }}>
+                    Continue to rank on the Songjam leaderboard
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6} md={2}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <Box sx={{ fontSize: 32, color: '#ba1e68', mb: 1 }}>🪂</Box>
+                  <Typography variant="subtitle1" sx={{ color: '#ba1e68', fontWeight: 700, mb: 0.5, textAlign: 'center' }}>
+                    $EVA Airdrop
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#fcfbfe', opacity: 0.85, textAlign: 'center' }}>
+                    Qualify for the upcoming $EVA token airdrop
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6} md={2}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <Box sx={{ fontSize: 32, color: '#7649fe', mb: 1 }}>🎧</Box>
+                  <Typography variant="subtitle1" sx={{ color: '#7649fe', fontWeight: 700, mb: 0.5, textAlign: 'center' }}>
+                    DJ Access
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#fcfbfe', opacity: 0.85, textAlign: 'center' }}>
+                    Access Songjam DJ to play music in X Spaces
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </Paper>
+        </Box>
+        {/* End Benefits of Staking Section */}
         {/* Leaderboard Section */}
         {/* <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
           <Box sx={{ width: '100%', maxWidth: '1200px' }}>
