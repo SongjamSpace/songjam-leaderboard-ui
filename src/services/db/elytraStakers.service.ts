@@ -34,3 +34,17 @@ export const createElytraStakerDoc = async (
   });
   return false;
 };
+
+export const checkIfWhitelisted = async (
+  walletAddress: string
+): Promise<ElytraStakerDoc> => {
+  const ss = doc(
+    db,
+    'leaderboard_projects',
+    'elytra_virtual',
+    'whitelistedUsers',
+    walletAddress
+  );
+  const docSs = await getDoc(ss);
+  return docSs.data() as ElytraStakerDoc;
+};

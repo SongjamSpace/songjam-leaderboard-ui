@@ -20,7 +20,11 @@ import {
   ElytraStakingInfo,
 } from '../services/elytra.service';
 import toast from 'react-hot-toast';
-import { createElytraStakerDoc } from '../services/db/elytraStakers.service';
+import {
+  checkIfWhitelisted,
+  createElytraStakerDoc,
+  ElytraStakerDoc,
+} from '../services/db/elytraStakers.service';
 import {
   signInWithPopup,
   TwitterAuthProvider,
@@ -37,51 +41,66 @@ export default function Elytra() {
   const [isCheckingStake, setIsCheckingStake] = useState(false);
   const { primaryWallet } = useDynamicContext();
   const [twitterUser, setTwitterUser] = useState<User | null>(null);
+  const [alreadyWhitelisted, setAlreadyWhitelisted] = useState(false);
+  const [addingToWhitelist, setAddingToWhitelist] = useState(false);
+  const [whitelistedUser, setWhitelistedUser] =
+    useState<ElytraStakerDoc | null>(null);
+
+  console.log({ twitterUser });
+
+  const checkIfAlreadyWhitelisted = async (walletAddress: string) => {
+    const whitelistedUser = await checkIfWhitelisted(walletAddress);
+    setAlreadyWhitelisted(!!whitelistedUser);
+    setWhitelistedUser(whitelistedUser);
+  };
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
+    if (primaryWallet?.address) {
+      checkIfAlreadyWhitelisted(primaryWallet.address);
+    }
+  }, [primaryWallet]);
+
+  const checkStaking = async () => {
+    if (primaryWallet?.address && !stakingInfo && !isCheckingStake) {
+      setIsCheckingStake(true);
+      try {
+        const info = await getElytraStakingStatus(primaryWallet.address, 8453); // Base chainId
+        setStakingInfo(info);
+        setIsCheckingStake(false);
+
+        if (info.hasMinimumStake && !twitterUser) {
+          // Auto-start X login if they have sufficient tokens
+          try {
+            // await signInWithSocialAccount(ProviderEnum.Twitter, {
+            //   redirectUrl: window.location.href,
+            // });
+          } catch (error) {
+            console.error('Error signing in with Twitter:', error);
+            toast.error('Failed to connect X account');
+          }
+        }
+      } catch (error) {
+        console.error('Error checking staking status:', error);
+        toast.error('Failed to check ELYTRA staking status');
+      }
+    }
+  };
+  // // Check staking status when wallet is connected
+  useEffect(() => {
+    checkStaking();
+  }, [primaryWallet]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user?.email) {
+        return;
+      }
       if (user) {
         setTwitterUser(user);
       }
     });
+    return () => unsubscribe();
   }, []);
-
-  // Get the id parameter from URL
-  const idParam = searchParams.get('id');
-
-  // // Check staking status when wallet is connected
-  useEffect(() => {
-    const checkStaking = async () => {
-      if (primaryWallet?.address && !stakingInfo && !isCheckingStake) {
-        setIsCheckingStake(true);
-        try {
-          const info = await getElytraStakingStatus(
-            primaryWallet.address,
-            8453
-          ); // Base chainId
-          setStakingInfo(info);
-          setIsCheckingStake(false);
-
-          if (info.hasMinimumStake && !twitterUser) {
-            // Auto-start X login if they have sufficient tokens
-            try {
-              // await signInWithSocialAccount(ProviderEnum.Twitter, {
-              //   redirectUrl: window.location.href,
-              // });
-            } catch (error) {
-              console.error('Error signing in with Twitter:', error);
-              toast.error('Failed to connect X account');
-            }
-          }
-        } catch (error) {
-          console.error('Error checking staking status:', error);
-          toast.error('Failed to check ELYTRA staking status');
-        }
-      }
-    };
-
-    checkStaking();
-  }, [primaryWallet]);
 
   const renderContent = () => {
     if (!primaryWallet) {
@@ -118,22 +137,78 @@ export default function Elytra() {
       );
     }
 
-    // if (isAuthLoading) {
-    //   return (
-    //     <Box sx={{ textAlign: 'center' }}>
-    //       <LinearProgress />
-    //     </Box>
-    //   );
-    // }
-
     if (stakingInfo) {
+      // Check if already whitelisted first
+      if (alreadyWhitelisted) {
+        if (stakingInfo.hasMinimumStake) {
+          return (
+            <Box sx={{ textAlign: 'center' }}>
+              <Alert
+                severity="success"
+                sx={{
+                  mb: 3,
+                  textAlign: 'left',
+                  '& .MuiAlert-message': { pt: '3px' },
+                }}
+              >
+                <Typography variant="h6" sx={{ mb: 1 }}>
+                  Successfully whitelisted for @{whitelistedUser?.username}
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  Your tweets now are eligible for the leaderboard points.
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ color: 'success.dark', fontWeight: 500 }}
+                >
+                  Current balance:{' '}
+                  {parseFloat(stakingInfo.formattedBalance).toLocaleString()} $
+                  {stakingInfo.symbol}
+                </Typography>
+              </Alert>
+            </Box>
+          );
+        } else {
+          return (
+            <Box sx={{ textAlign: 'center' }}>
+              <Alert
+                severity="warning"
+                sx={{
+                  mb: 3,
+                  textAlign: 'left',
+                  '& .MuiAlert-message': { pt: '3px' },
+                }}
+              >
+                <Typography variant="h6" sx={{ mb: 1 }}>
+                  Your points updates are Paused
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ color: 'warning.dark', fontWeight: 500 }}
+                >
+                  Warning: Your points will not be updated if you don't maintain
+                  at least 50,000 $ELYTRA staked.
+                </Typography>
+              </Alert>
+            </Box>
+          );
+        }
+      }
+
+      // Not whitelisted - proceed with staking checks
       if (stakingInfo.hasMinimumStake) {
         return (
           <Box sx={{ textAlign: 'center' }}>
             {!twitterUser && (
-              <Alert severity="success" sx={{ mb: 3, textAlign: 'left' }}>
+              <Alert
+                severity="success"
+                sx={{
+                  mb: 3,
+                  textAlign: 'left',
+                }}
+              >
                 <Typography variant="h6" sx={{ mb: 1 }}>
-                  ✅ Success! You have sufficient $ELYTRA tokens staked
+                  Success! You have sufficient $ELYTRA tokens staked
                 </Typography>
                 <Typography variant="body2">
                   Balance:{' '}
@@ -152,8 +227,6 @@ export default function Elytra() {
                   variant="contained"
                   size="large"
                   onClick={async () => {
-                    // onChangeLoginView('twitter');
-                    // setShowDynamicAuth(true);
                     try {
                       const userCreds = await signInWithPopup(
                         auth,
@@ -182,9 +255,16 @@ export default function Elytra() {
                 </Button>
               </Box>
             ) : (
-              <Alert severity="success" sx={{ textAlign: 'left', mb: 3 }}>
+              <Alert
+                severity="success"
+                sx={{
+                  textAlign: 'left',
+                  mb: 3,
+                  '& .MuiAlert-message': { pt: '3px' },
+                }}
+              >
                 <Typography variant="h6" sx={{ mb: 1 }}>
-                  Welcome to the ELYTRA Leaderboard!
+                  You have sufficient staked $ELYTRA tokens.
                 </Typography>
                 <Typography variant="body2">
                   Your X account @
@@ -193,64 +273,59 @@ export default function Elytra() {
                   is now connected and you're ready to participate in the
                   leaderboard.
                 </Typography>
+                <Typography variant="body2" sx={{ mt: 2 }}>
+                  Current balance:{' '}
+                  {parseFloat(stakingInfo.formattedBalance).toLocaleString()} $
+                  {stakingInfo.symbol}
+                </Typography>
               </Alert>
             )}
 
-            {/* {twitterUser && stakingInfo.hasMinimumStake && ( */}
-            <Button
-              variant="contained"
-              size="small"
-              onClick={async () => {
-                if (!primaryWallet?.address || !twitterUser) {
-                  toast.error('Failed to create staker document');
-                  return;
-                }
-                // TODO: Implement leaderboard join logic
-                const isExists = await createElytraStakerDoc(
-                  primaryWallet.address,
-                  twitterUser.uid,
-                  (twitterUser as any).reloadUserInfo?.screenName,
-                  twitterUser.displayName
-                );
-                if (isExists) {
-                  toast.error('Already whitelisted');
-                } else {
-                  toast.success('Welcome to the ELYTRA Leaderboard!');
-                }
-                window.close();
-              }}
-              // sx={{
-              //   background: 'linear-gradient(135deg, #10b981, #059669)',
-              //   py: 2,
-              //   px: 4,
-              //   borderRadius: 2,
-              //   fontSize: '1.1rem',
-              //   fontWeight: 600,
-              //   '&:hover': {
-              //     background: 'linear-gradient(135deg, #059669, #047857)',
-              //   },
-              // }}
-              startIcon={
-                <Box
-                  component="svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" />
-                </Box>
-              }
-            >
-              Join Leaderboard
-            </Button>
-            {/* )} */}
+            {twitterUser && (
+              <Button
+                disabled={addingToWhitelist}
+                variant="contained"
+                size="small"
+                onClick={async () => {
+                  if (!primaryWallet?.address || !twitterUser) {
+                    toast.error('Failed to create staker document');
+                    return;
+                  }
+                  setAddingToWhitelist(true);
+                  const isExists = await createElytraStakerDoc(
+                    primaryWallet.address,
+                    twitterUser.uid,
+                    (twitterUser as any).reloadUserInfo?.screenName,
+                    twitterUser.displayName
+                  );
+                  if (isExists) {
+                    toast.error('You are already whitelisted!');
+                  } else {
+                    toast.success('You are now whitelisted!');
+                  }
+                  await checkIfAlreadyWhitelisted(primaryWallet.address);
+                  setAddingToWhitelist(false);
+                  window.close();
+                }}
+              >
+                {addingToWhitelist
+                  ? 'Adding to whitelist...'
+                  : 'Join Leaderboard'}
+              </Button>
+            )}
           </Box>
         );
       } else {
         return (
           <Box sx={{ textAlign: 'center' }}>
-            <Alert severity="warning" sx={{ mb: 3, textAlign: 'left' }}>
+            <Alert
+              severity="warning"
+              sx={{
+                mb: 3,
+                textAlign: 'left',
+                '& .MuiAlert-message': { pt: '3px' },
+              }}
+            >
               <Typography variant="h6" sx={{ mb: 1 }}>
                 Insufficient Stake Balance
               </Typography>
@@ -270,15 +345,6 @@ export default function Elytra() {
               size="small"
               href="https://app.virtuals.io/virtuals/28867"
               target="_blank"
-              // sx={{
-              //   background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-              //   py: 1.5,
-              //   px: 4,
-              //   borderRadius: 2,
-              //   '&:hover': {
-              //     background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
-              //   },
-              // }}
             >
               Stake ELYTRA Tokens
             </Button>
@@ -331,9 +397,9 @@ export default function Elytra() {
               fontWeight: 300,
             }}
           >
-            Leaderboard Access
+            Leaderboard Whitelist
           </Typography>
-          {idParam && (
+          {primaryWallet && !stakingInfo?.hasMinimumStake && (
             <Typography
               variant="body1"
               sx={{
@@ -342,8 +408,8 @@ export default function Elytra() {
                 mx: 'auto',
               }}
             >
-              Welcome! We're verifying your ELYTRA token holdings to grant you
-              access to the leaderboard.
+              Welcome! We're verifying your ELYTRA token holdings for the
+              leaderboard whitelisting.
             </Typography>
           )}
         </Box>
