@@ -166,11 +166,28 @@ const ClaimSangTokens = () => {
       sx={{
         minHeight: '100vh',
         background:
-          'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
+          `linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)`,
+        position: 'relative',
         py: 4,
+        overflow: 'hidden',
+        '&:before': {
+          content: '""',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: 0,
+          backgroundImage: 'url(/logos/songjam_logo.png)',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+          backgroundSize: 'cover',
+          opacity: 0.07,
+          pointerEvents: 'none',
+        },
       }}
     >
-      <Container maxWidth="xl">
+      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
         {/* Header */}
         <Box
           sx={{
