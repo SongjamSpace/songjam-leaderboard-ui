@@ -63,7 +63,7 @@ function DynamicWrapper() {
       <ThemeProvider theme={theme}>
         {/* <AuthProvider> */}
         <Routes>
-          <Route path="/claim-sang" element={<ClaimSangTokens />} />
+          <Route path="/" element={<ClaimSangTokens />} />
           <Route path="/elytra" element={<Elytra />} />
         </Routes>
         {/* </AuthProvider> */}
