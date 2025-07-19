@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import { Wallet } from '@dynamic-labs/sdk-react-core';
 
 // ERC20 ABI for balance checking
 const ERC20_ABI = [
@@ -20,14 +21,12 @@ export interface ElytraStakingInfo {
 }
 
 export const getElytraStakingStatus = async (
-  walletAddress: string,
-  chainId: number
+  walletAddress: string
 ): Promise<ElytraStakingInfo> => {
-  if (!window.ethereum) {
-    throw new Error('No wallet provider found');
-  }
-
-  const provider = new ethers.BrowserProvider(window.ethereum);
+  const provider = new ethers.AlchemyProvider(
+    8453,
+    import.meta.env.VITE_ALCHEMY_API_KEY
+  );
   const STACKING_CONTRACT_ADDRESS =
     '0x433584897c42db1770E50E1c93A4F20E35fFed06';
   // check if user has a balance of this contract

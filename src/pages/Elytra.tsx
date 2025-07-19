@@ -46,8 +46,6 @@ export default function Elytra() {
   const [whitelistedUser, setWhitelistedUser] =
     useState<ElytraStakerDoc | null>(null);
 
-  console.log({ twitterUser });
-
   const checkIfAlreadyWhitelisted = async (walletAddress: string) => {
     const whitelistedUser = await checkIfWhitelisted(walletAddress);
     setAlreadyWhitelisted(!!whitelistedUser);
@@ -64,7 +62,7 @@ export default function Elytra() {
     if (primaryWallet?.address && !stakingInfo && !isCheckingStake) {
       setIsCheckingStake(true);
       try {
-        const info = await getElytraStakingStatus(primaryWallet.address, 8453); // Base chainId
+        const info = await getElytraStakingStatus(primaryWallet.address); // Base chainId
         setStakingInfo(info);
         setIsCheckingStake(false);
 

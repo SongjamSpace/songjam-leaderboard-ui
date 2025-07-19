@@ -61,10 +61,7 @@ export default function App({ onChangeLoginView }: AppProps) {
       if (primaryWallet?.address && !stakingInfo && !isCheckingStake) {
         setIsCheckingStake(true);
         try {
-          const info = await getElytraStakingStatus(
-            primaryWallet.address,
-            8453
-          ); // Base chainId
+          const info = await getElytraStakingStatus(primaryWallet.address); // Base chainId
           setStakingInfo(info);
           setIsCheckingStake(false);
 
