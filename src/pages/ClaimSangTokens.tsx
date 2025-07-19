@@ -299,14 +299,7 @@ const ClaimSangTokens = () => {
                     ).toFixed(2)}%`
                   : 'N/A'
               }
-              subtitle={
-                userLbData
-                  ? `${Math.floor(
-                      (userLbData.totalPoints / analytics.totalPoints) *
-                        analytics.totalTokens
-                    ).toLocaleString()} $SANG`
-                  : 'No leaderboard data'
-              }
+              subtitle="of Pre-Genesis Yappers"
               color="#F59E0B"
             />
           </Grid>
