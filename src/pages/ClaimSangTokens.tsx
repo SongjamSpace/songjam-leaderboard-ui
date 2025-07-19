@@ -9,6 +9,7 @@ import {
   Avatar,
   keyframes,
   Dialog,
+  LinearProgress,
 } from '@mui/material';
 import {
   signInWithPopup,
@@ -22,6 +23,12 @@ import {
   DynamicEmbeddedWidget,
   useDynamicContext,
 } from '@dynamic-labs/sdk-react-core';
+import {
+  getWalletForAirdrop,
+  SangSubmitWallet,
+  submitWalletForAirdrop,
+} from '../services/db/sangClaim.service';
+import { toast, Toaster } from 'react-hot-toast';
 
 const glowAnimation = keyframes`
   0% { box-shadow: 0 0 5px rgba(139, 92, 246, 0.5); }
@@ -49,11 +56,23 @@ const ClaimSangTokens = () => {
   } | null>(null);
   const [showConnectWallet, setShowConnectWallet] = useState(false);
   const { primaryWallet } = useDynamicContext();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [walletForAirdrop, setWalletForAirdrop] =
+    useState<SangSubmitWallet | null>(null);
 
   const checkIfUserIsLeaderboardMember = async (userId: string) => {
+    setIsLoading(true);
     const lbData = await userIdExistsInLeaderboard(userId);
     setIsLeaderboardMember(!!lbData);
     setUserLbData(lbData as { totalPoints: number } | null);
+    setIsLoading(false);
+  };
+
+  const fetchWalletForAirdrop = async (twitterId: string) => {
+    const wallet = await getWalletForAirdrop(twitterId);
+    setWalletForAirdrop(wallet as SangSubmitWallet);
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -64,13 +83,15 @@ const ClaimSangTokens = () => {
 
   useEffect(() => {
     if (twitterUser) {
-      checkIfUserIsLeaderboardMember('1717491522482913280');
+      checkIfUserIsLeaderboardMember(twitterUser.providerData[0].uid);
+      fetchWalletForAirdrop(twitterUser.providerData[0].uid);
     }
   }, [twitterUser]);
 
   useEffect(() => {
     // Listen for auth state changes
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setIsLoading(false);
       setTwitterUser(user);
     });
 
@@ -165,8 +186,7 @@ const ClaimSangTokens = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background:
-          `linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)`,
+        background: `linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)`,
         position: 'relative',
         py: 4,
         overflow: 'hidden',
@@ -292,6 +312,7 @@ const ClaimSangTokens = () => {
           </Grid>
         </Grid>
 
+        {isLoading && <LinearProgress />}
         {/* Claim Section - Only show if signed in */}
         {isLeaderboardMember ? (
           <Box
@@ -355,21 +376,36 @@ const ClaimSangTokens = () => {
                     >
                       Wallet:
                     </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: '#8B5CF6',
-                        fontFamily: 'monospace',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      {primaryWallet.address.slice(0, 6)}...
-                      {primaryWallet.address.slice(-4)}
-                    </Typography>
+                    {walletForAirdrop ? (
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: '#8B5CF6',
+                          fontFamily: 'monospace',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {walletForAirdrop.walletAddress.slice(0, 6)}...
+                        {walletForAirdrop.walletAddress.slice(-4)}
+                      </Typography>
+                    ) : (
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: '#8B5CF6',
+                          fontFamily: 'monospace',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {primaryWallet.address.slice(0, 6)}...
+                        {primaryWallet.address.slice(-4)}
+                      </Typography>
+                    )}
                   </Box>
                   <Button
                     variant="contained"
                     size="large"
+                    disabled={isSubmitting || !!walletForAirdrop}
                     sx={{
                       background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
                       color: 'white',
@@ -385,11 +421,35 @@ const ClaimSangTokens = () => {
                         boxShadow: '0 6px 20px rgba(139, 92, 246, 0.4)',
                       },
                     }}
-                    onClick={() => {
-                      setShowConnectWallet(false);
+                    onClick={async () => {
+                      if (!twitterUser || !twitterUser.providerData[0].uid) {
+                        toast.error(
+                          'Please sign in with X to submit your wallet'
+                        );
+                        return;
+                      }
+                      setIsSubmitting(true);
+                      await submitWalletForAirdrop(
+                        twitterUser.providerData[0].uid,
+                        {
+                          walletAddress: primaryWallet.address,
+                          userId: twitterUser.uid,
+                          username: twitterUser.displayName,
+                          name: twitterUser.displayName,
+                        }
+                      );
+                      await fetchWalletForAirdrop(
+                        twitterUser.providerData[0].uid
+                      );
+                      setIsSubmitting(false);
+                      toast.success('Wallet submitted successfully');
                     }}
                   >
-                    Submit for Airdrop
+                    {walletForAirdrop
+                      ? 'Wallet Submitted'
+                      : isSubmitting
+                      ? 'Submitting...'
+                      : 'Submit for Airdrop'}
                   </Button>
                 </>
               ) : (
@@ -526,6 +586,7 @@ const ClaimSangTokens = () => {
                 Songjam Pre-Genesis campaign can claim tokens.
               </Typography>
               <Button
+                disabled={isLoading}
                 variant="contained"
                 size="large"
                 onClick={handleTwitterSignIn}
@@ -580,7 +641,10 @@ const ClaimSangTokens = () => {
             >
               Stake $SANG
             </Typography>
-            <Typography variant="body1" sx={{ color: '#fcfbfe', mb: 3, opacity: 0.85 }}>
+            <Typography
+              variant="body1"
+              sx={{ color: '#fcfbfe', mb: 3, opacity: 0.85 }}
+            >
               Stake via{' '}
               <a
                 href="https://app.virtuals.io/virtuals/29671"
@@ -592,8 +656,12 @@ const ClaimSangTokens = () => {
                   textDecoration: 'none',
                   transition: 'text-decoration 0.2s',
                 }}
-                onMouseOver={e => (e.currentTarget.style.textDecoration = 'underline')}
-                onMouseOut={e => (e.currentTarget.style.textDecoration = 'none')}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.textDecoration = 'underline')
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.textDecoration = 'none')
+                }
               >
                 Virtuals
               </a>{' '}
@@ -601,67 +669,205 @@ const ClaimSangTokens = () => {
             </Typography>
             <Grid container spacing={2} justifyContent="center">
               <Grid item xs={12} sm={6} md={2}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 1,
+                    mb: 2,
+                  }}
+                >
                   <Box sx={{ fontSize: 32, color: '#5643fd', mb: 1 }}>💎</Box>
-                  <Typography variant="subtitle1" sx={{ color: '#5643fd', fontWeight: 700, mb: 0.5, textAlign: 'center' }}>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      color: '#5643fd',
+                      fontWeight: 700,
+                      mb: 0.5,
+                      textAlign: 'center',
+                    }}
+                  >
                     Earn Virgen Points
                   </Typography>
-                  <Typography variant="body2" sx={{ color: '#fcfbfe', opacity: 0.85, textAlign: 'center' }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: '#fcfbfe',
+                      opacity: 0.85,
+                      textAlign: 'center',
+                    }}
+                  >
                     Get access to other Virtuals agents
                   </Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} sm={6} md={2}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 1,
+                    mb: 2,
+                  }}
+                >
                   <Box sx={{ fontSize: 32, color: '#ba1e68', mb: 1 }}>🚀</Box>
-                  <Typography variant="subtitle1" sx={{ color: '#ba1e68', fontWeight: 700, mb: 0.5, textAlign: 'center' }}>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      color: '#ba1e68',
+                      fontWeight: 700,
+                      mb: 0.5,
+                      textAlign: 'center',
+                    }}
+                  >
                     Referral Multiplier
                   </Typography>
-                  <Typography variant="body2" sx={{ color: '#fcfbfe', opacity: 0.85, textAlign: 'center' }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: '#fcfbfe',
+                      opacity: 0.85,
+                      textAlign: 'center',
+                    }}
+                  >
                     Earn more through our InfoFi offering
                   </Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} sm={6} md={2}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 1,
+                    mb: 2,
+                  }}
+                >
                   <Box sx={{ fontSize: 32, color: '#7649fe', mb: 1 }}>🗣️</Box>
-                  <Typography variant="subtitle1" sx={{ color: '#7649fe', fontWeight: 700, mb: 0.5, textAlign: 'center' }}>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      color: '#7649fe',
+                      fontWeight: 700,
+                      mb: 0.5,
+                      textAlign: 'center',
+                    }}
+                  >
                     Space CRM Discount
                   </Typography>
-                  <Typography variant="body2" sx={{ color: '#fcfbfe', opacity: 0.85, textAlign: 'center' }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: '#fcfbfe',
+                      opacity: 0.85,
+                      textAlign: 'center',
+                    }}
+                  >
                     Enjoy discounts on our agentic CRM
                   </Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} sm={6} md={2}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 1,
+                    mb: 2,
+                  }}
+                >
                   <Box sx={{ fontSize: 32, color: '#5643fd', mb: 1 }}>🏆</Box>
-                  <Typography variant="subtitle1" sx={{ color: '#5643fd', fontWeight: 700, mb: 0.5, textAlign: 'center' }}>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      color: '#5643fd',
+                      fontWeight: 700,
+                      mb: 0.5,
+                      textAlign: 'center',
+                    }}
+                  >
                     Genesis Yapping
                   </Typography>
-                  <Typography variant="body2" sx={{ color: '#fcfbfe', opacity: 0.85, textAlign: 'center' }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: '#fcfbfe',
+                      opacity: 0.85,
+                      textAlign: 'center',
+                    }}
+                  >
                     Continue to rank on the Songjam leaderboard
                   </Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} sm={6} md={2}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 1,
+                    mb: 2,
+                  }}
+                >
                   <Box sx={{ fontSize: 32, color: '#ba1e68', mb: 1 }}>🪂</Box>
-                  <Typography variant="subtitle1" sx={{ color: '#ba1e68', fontWeight: 700, mb: 0.5, textAlign: 'center' }}>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      color: '#ba1e68',
+                      fontWeight: 700,
+                      mb: 0.5,
+                      textAlign: 'center',
+                    }}
+                  >
                     $EVA Airdrop
                   </Typography>
-                  <Typography variant="body2" sx={{ color: '#fcfbfe', opacity: 0.85, textAlign: 'center' }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: '#fcfbfe',
+                      opacity: 0.85,
+                      textAlign: 'center',
+                    }}
+                  >
                     Qualify for the upcoming $EVA token airdrop
                   </Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} sm={6} md={2}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 1,
+                    mb: 2,
+                  }}
+                >
                   <Box sx={{ fontSize: 32, color: '#7649fe', mb: 1 }}>🎧</Box>
-                  <Typography variant="subtitle1" sx={{ color: '#7649fe', fontWeight: 700, mb: 0.5, textAlign: 'center' }}>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      color: '#7649fe',
+                      fontWeight: 700,
+                      mb: 0.5,
+                      textAlign: 'center',
+                    }}
+                  >
                     DJ Access
                   </Typography>
-                  <Typography variant="body2" sx={{ color: '#fcfbfe', opacity: 0.85, textAlign: 'center' }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: '#fcfbfe',
+                      opacity: 0.85,
+                      textAlign: 'center',
+                    }}
+                  >
                     Access Songjam DJ to play music in X Spaces
                   </Typography>
                 </Box>
@@ -679,6 +885,7 @@ const ClaimSangTokens = () => {
         <Dialog open={showConnectWallet} onClose={() => {}} maxWidth="sm">
           <DynamicEmbeddedWidget background="default" style={{ width: 350 }} />
         </Dialog>
+        <Toaster position="top-center" />
       </Container>
     </Box>
   );
