@@ -14,6 +14,7 @@ import {
   SdkViewType,
 } from '@dynamic-labs/sdk-api';
 import Elytra from './pages/Elytra';
+import EvaOnlineXyz from './pages/EvaOnlineXyz';
 
 WebFont.load({
   google: {
@@ -65,6 +66,7 @@ function DynamicWrapper() {
         <Routes>
           <Route path="/" element={<ClaimSangTokens />} />
           <Route path="/elytra" element={<Elytra />} />
+          <Route path="/evaonlinexyz" element={<EvaOnlineXyz />} />
         </Routes>
         {/* </AuthProvider> */}
       </ThemeProvider>
