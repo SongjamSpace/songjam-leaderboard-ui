@@ -46,7 +46,7 @@ const ClaimSangTokens = () => {
 
   const checkIfUserIsLeaderboardMember = async (userId: string) => {
     setIsLoading(true);
-    const lbData = await userIdExistsInLeaderboard('1717491522482913280', 'EVA');
+    const lbData = await userIdExistsInLeaderboard(userId, 'EVA');
     setIsLeaderboardMember(!!lbData);
     setUserLbData(lbData as { totalPoints: number } | null);
     setIsLoading(false);
@@ -175,7 +175,7 @@ const ClaimSangTokens = () => {
         </Box>
 
         {isLoading && <LinearProgress sx={{ bgcolor: '#f1e3eb' }} />}
-        
+
         {/* Claim Section - Only show if signed in */}
         {isLeaderboardMember ? (
           <Box
@@ -274,8 +274,14 @@ const ClaimSangTokens = () => {
                     size="large"
                     disabled={isSubmitting || !!walletForAirdrop}
                     sx={{
-                      bgcolor: isSubmitting || !!walletForAirdrop ? '#faecee' : '#ef4444',
-                      color: isSubmitting || !!walletForAirdrop ? '#d1002c' : 'white',
+                      bgcolor:
+                        isSubmitting || !!walletForAirdrop
+                          ? '#faecee'
+                          : '#ef4444',
+                      color:
+                        isSubmitting || !!walletForAirdrop
+                          ? '#d1002c'
+                          : 'white',
                       fontFamily: 'Chakra Petch, sans-serif',
                       fontWeight: 700,
                       px: 4,
@@ -285,7 +291,10 @@ const ClaimSangTokens = () => {
                       fontSize: '1.1rem',
                       borderColor: 'transparent',
                       '&:hover': {
-                        bgcolor: isSubmitting || !!walletForAirdrop ? '#f8d7da' : '#b91c1c',
+                        bgcolor:
+                          isSubmitting || !!walletForAirdrop
+                            ? '#f8d7da'
+                            : '#b91c1c',
                       },
                       transition: 'background 0.2s',
                     }}
@@ -342,8 +351,8 @@ const ClaimSangTokens = () => {
                       mb: 3,
                     }}
                   >
-                    Based on your total leaderboard points, you're eligible for the $EVA
-                    airdrop. Add your wallet to receive your tokens.
+                    Based on your total leaderboard points, you're eligible for
+                    the $EVA airdrop. Add your wallet to receive your tokens.
                   </Typography>
                   <Button
                     variant="contained"
@@ -413,8 +422,17 @@ const ClaimSangTokens = () => {
                   mb: 3,
                 }}
               >
-                You are not currently eligible for the $EVA airdrop.
-                Only participants from the EVA ONLINE <a href="https://www.evaonline.xyz/leaderboard" target="_blank" rel="noopener noreferrer" style={{color: '#ff007a', textDecoration: 'underline'}}>leaderboard</a> are eligible for the airdrop.
+                You are not currently eligible for the $EVA airdrop. Only
+                participants from the EVA ONLINE{' '}
+                <a
+                  href="https://www.evaonline.xyz/leaderboard"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: '#ff007a', textDecoration: 'underline' }}
+                >
+                  leaderboard
+                </a>{' '}
+                are eligible for the airdrop.
               </Typography>
             </Paper>
           </Box>
@@ -488,7 +506,7 @@ const ClaimSangTokens = () => {
             </Paper>
           </Box>
         )}
-        
+
         {/* Footer */}
         <Box display={'flex'} justifyContent={'center'}>
           <Typography
@@ -522,7 +540,7 @@ const ClaimSangTokens = () => {
             </a>
           </Typography>
         </Box>
-        
+
         <Dialog open={showConnectWallet} onClose={() => {}} maxWidth="sm">
           <DynamicEmbeddedWidget background="default" style={{ width: 350 }} />
         </Dialog>
