@@ -94,6 +94,7 @@ const WachAi = () => {
   const handleSignOut = async () => {
     try {
       await auth.signOut();
+      window.location.reload();
     } catch (error) {
       console.error('Sign-out error:', error);
     }
@@ -444,7 +445,7 @@ const WachAi = () => {
                   mb: 2,
                 }}
               >
-                Are You Part of the WACHAI Leaderboard?
+                Are You Part of the WachAI Leaderboard?
               </Typography>
               <Typography
                 variant="body1"

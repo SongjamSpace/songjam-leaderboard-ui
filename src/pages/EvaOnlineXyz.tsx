@@ -94,6 +94,7 @@ const EvaOnlineXyz = () => {
   const handleSignOut = async () => {
     try {
       await auth.signOut();
+      window.location.reload();
     } catch (error) {
       console.error('Sign-out error:', error);
     }
