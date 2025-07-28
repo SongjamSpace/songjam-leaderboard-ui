@@ -10,6 +10,8 @@ import {
   keyframes,
   Dialog,
   LinearProgress,
+  Stack,
+  TextField,
 } from '@mui/material';
 import {
   signInWithPopup,
@@ -19,10 +21,10 @@ import {
 } from 'firebase/auth';
 import { auth } from '../services/firebase.service';
 import { userIdExistsInLeaderboard } from '../services/db/leaderboard.service';
-import {
-  DynamicEmbeddedWidget,
-  useDynamicContext,
-} from '@dynamic-labs/sdk-react-core';
+// import {
+//   DynamicEmbeddedWidget,
+//   useDynamicContext,
+// } from '@dynamic-labs/sdk-react-core';
 import {
   getWalletForAirdrop,
   TokenSubmitWallet,
@@ -54,12 +56,13 @@ const ClaimSangTokens = () => {
   const [userLbData, setUserLbData] = useState<{
     totalPoints: number;
   } | null>(null);
-  const [showConnectWallet, setShowConnectWallet] = useState(false);
-  const { primaryWallet } = useDynamicContext();
+  // const [showConnectWallet, setShowConnectWallet] = useState(false);
+  // const { primaryWallet } = useDynamicContext();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [walletForAirdrop, setWalletForAirdrop] =
     useState<TokenSubmitWallet | null>(null);
+  const [localWalletAddres, setLocalWalletAddress] = useState('');
 
   const checkIfUserIsLeaderboardMember = async (userId: string) => {
     setIsLoading(true);
@@ -75,11 +78,11 @@ const ClaimSangTokens = () => {
     setIsLoading(false);
   };
 
-  useEffect(() => {
-    if (primaryWallet) {
-      setShowConnectWallet(false);
-    }
-  }, [primaryWallet]);
+  // useEffect(() => {
+  //   if (primaryWallet) {
+  //     setShowConnectWallet(false);
+  //   }
+  // }, [primaryWallet]);
 
   useEffect(() => {
     if (twitterUser && twitterUser.providerData.length) {
@@ -337,7 +340,7 @@ const ClaimSangTokens = () => {
                 textAlign: 'center',
               }}
             >
-              {primaryWallet && twitterUser ? (
+              {twitterUser && walletForAirdrop ? (
                 <>
                   <Typography
                     variant="h5"
@@ -356,7 +359,8 @@ const ClaimSangTokens = () => {
                       mb: 3,
                     }}
                   >
-                    Your wallet is connected and ready to receive your airdrop.
+                    Your wallet address is stored and you are ready to receive
+                    your $SANG token airdrop.
                   </Typography>
                   <Box
                     sx={{
@@ -380,31 +384,17 @@ const ClaimSangTokens = () => {
                     >
                       Wallet:
                     </Typography>
-                    {walletForAirdrop ? (
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: '#8B5CF6',
-                          fontFamily: 'monospace',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {walletForAirdrop.walletAddress.slice(0, 6)}...
-                        {walletForAirdrop.walletAddress.slice(-4)}
-                      </Typography>
-                    ) : (
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: '#8B5CF6',
-                          fontFamily: 'monospace',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {primaryWallet.address.slice(0, 6)}...
-                        {primaryWallet.address.slice(-4)}
-                      </Typography>
-                    )}
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#8B5CF6',
+                        fontFamily: 'monospace',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {walletForAirdrop.walletAddress.slice(0, 6)}...
+                      {walletForAirdrop.walletAddress.slice(-4)}
+                    </Typography>
                   </Box>
                   <Button
                     variant="contained"
@@ -425,36 +415,9 @@ const ClaimSangTokens = () => {
                         boxShadow: '0 6px 20px rgba(139, 92, 246, 0.4)',
                       },
                     }}
-                    onClick={async () => {
-                      if (!twitterUser || !twitterUser.providerData[0].uid) {
-                        toast.error(
-                          'Please sign in with X to submit your wallet'
-                        );
-                        return;
-                      }
-                      setIsSubmitting(true);
-                      await submitTokenForAirdrop(
-                        twitterUser.providerData[0].uid,
-                        {
-                          walletAddress: primaryWallet.address,
-                          userId: twitterUser.uid,
-                          username: twitterUser.displayName,
-                          name: twitterUser.displayName,
-                        },
-                        'SANG'
-                      );
-                      await fetchWalletForAirdrop(
-                        twitterUser.providerData[0].uid
-                      );
-                      setIsSubmitting(false);
-                      toast.success('Wallet submitted successfully');
-                    }}
                   >
-                    {walletForAirdrop
-                      ? 'Wallet Submitted'
-                      : isSubmitting
-                      ? 'Submitting...'
-                      : 'Submit for Airdrop'}
+                    {' '}
+                    Wallet Submitted
                   </Button>
                 </>
               ) : (
@@ -479,30 +442,86 @@ const ClaimSangTokens = () => {
                     Based on your sing points, you're eligible for the $SANG
                     airdrop. Add your wallet to receive your tokens.
                   </Typography>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    sx={{
-                      background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
-                      color: 'white',
-                      px: 4,
-                      py: 2,
-                      borderRadius: '25px',
-                      fontWeight: 'bold',
-                      textTransform: 'none',
-                      fontSize: '1.1rem',
-                      boxShadow: '0 4px 15px rgba(139, 92, 246, 0.3)',
-                      '&:hover': {
-                        background: 'linear-gradient(45deg, #7c3aed, #db2777)',
-                        boxShadow: '0 6px 20px rgba(139, 92, 246, 0.4)',
-                      },
-                    }}
-                    onClick={() => {
-                      setShowConnectWallet(true);
-                    }}
-                  >
-                    Connect Wallet
-                  </Button>
+                  <Stack>
+                    <TextField
+                      fullWidth
+                      label="Wallet Address"
+                      variant="outlined"
+                      value={localWalletAddres}
+                      onChange={(e) => setLocalWalletAddress(e.target.value)}
+                      placeholder="Enter your wallet address (0x...)"
+                      sx={{
+                        mb: 3,
+                        '& .MuiOutlinedInput-root': {
+                          fontFamily: 'Chakra Petch, sans-serif',
+                          '& fieldset': {
+                            borderColor: '#8B5CF6',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: '#8B5CF6',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#8B5CF6',
+                          },
+                        },
+                        '& .MuiInputLabel-root': {
+                          color: '#fff',
+                          '&.Mui-focused': {
+                            color: '#8B5CF6',
+                          },
+                        },
+                        '& .MuiInputBase-input': {
+                          color: '#fff',
+                        },
+                      }}
+                    />
+                    <Button
+                      variant="contained"
+                      size="large"
+                      sx={{
+                        background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
+                        color: 'white',
+                        px: 4,
+                        py: 2,
+                        borderRadius: '25px',
+                        fontWeight: 'bold',
+                        textTransform: 'none',
+                        fontSize: '1.1rem',
+                        boxShadow: '0 4px 15px rgba(139, 92, 246, 0.3)',
+                        '&:hover': {
+                          background:
+                            'linear-gradient(45deg, #7c3aed, #db2777)',
+                          boxShadow: '0 6px 20px rgba(139, 92, 246, 0.4)',
+                        },
+                      }}
+                      onClick={async () => {
+                        if (!twitterUser || !twitterUser.providerData[0].uid) {
+                          toast.error(
+                            'Please sign in with X to submit your wallet'
+                          );
+                          return;
+                        }
+                        setIsSubmitting(true);
+                        await submitTokenForAirdrop(
+                          twitterUser.providerData[0].uid,
+                          {
+                            walletAddress: localWalletAddres,
+                            userId: twitterUser.uid,
+                            username: twitterUser.displayName,
+                            name: twitterUser.displayName,
+                          },
+                          'SANG'
+                        );
+                        await fetchWalletForAirdrop(
+                          twitterUser.providerData[0].uid
+                        );
+                        setIsSubmitting(false);
+                        toast.success('Wallet submitted successfully');
+                      }}
+                    >
+                      {isSubmitting ? 'Submitting...' : 'Submit for Airdrop'}
+                    </Button>
+                  </Stack>
                 </>
               )}
             </Paper>
@@ -887,9 +906,9 @@ const ClaimSangTokens = () => {
             <SignPointsLeaderboard />
           </Box>
         </Box> */}
-        <Dialog open={showConnectWallet} onClose={() => {}} maxWidth="sm">
+        {/* <Dialog open={showConnectWallet} onClose={() => {}} maxWidth="sm">
           <DynamicEmbeddedWidget background="default" style={{ width: 350 }} />
-        </Dialog>
+        </Dialog> */}
         <Toaster position="top-center" />
       </Container>
     </Box>
