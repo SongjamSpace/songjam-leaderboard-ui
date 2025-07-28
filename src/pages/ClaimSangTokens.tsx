@@ -82,9 +82,14 @@ const ClaimSangTokens = () => {
   }, [primaryWallet]);
 
   useEffect(() => {
-    if (twitterUser) {
-      checkIfUserIsLeaderboardMember(twitterUser.providerData[0].uid);
-      fetchWalletForAirdrop(twitterUser.providerData[0].uid);
+    if (twitterUser && twitterUser.providerData.length) {
+      const twitterProvider = twitterUser.providerData.find(
+        (p) => p.providerId === 'twitter.com'
+      );
+      if (twitterProvider) {
+        checkIfUserIsLeaderboardMember(twitterProvider.uid);
+        fetchWalletForAirdrop(twitterProvider.uid);
+      }
     }
   }, [twitterUser]);
 
@@ -92,7 +97,12 @@ const ClaimSangTokens = () => {
     // Listen for auth state changes
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setIsLoading(false);
-      setTwitterUser(user);
+      if (
+        user?.providerData.length &&
+        user.providerData.find((p) => p.providerId === 'twitter.com')
+      ) {
+        setTwitterUser(user);
+      }
     });
 
     // Mock analytics data - replace with actual API call
@@ -117,6 +127,7 @@ const ClaimSangTokens = () => {
   const handleSignOut = async () => {
     try {
       await auth.signOut();
+      window.location.reload();
     } catch (error) {
       console.error('Sign-out error:', error);
     }
