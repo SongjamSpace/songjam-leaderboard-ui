@@ -25,8 +25,8 @@ import {
 } from '@dynamic-labs/sdk-react-core';
 import {
   getWalletForAirdrop,
-  SangSubmitWallet,
-  submitWalletForAirdrop,
+  TokenSubmitWallet,
+  submitTokenForAirdrop,
 } from '../services/db/sangClaim.service';
 import { toast, Toaster } from 'react-hot-toast';
 
@@ -59,19 +59,19 @@ const ClaimSangTokens = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [walletForAirdrop, setWalletForAirdrop] =
-    useState<SangSubmitWallet | null>(null);
+    useState<TokenSubmitWallet | null>(null);
 
   const checkIfUserIsLeaderboardMember = async (userId: string) => {
     setIsLoading(true);
-    const lbData = await userIdExistsInLeaderboard(userId);
+    const lbData = await userIdExistsInLeaderboard(userId, 'SANG');
     setIsLeaderboardMember(!!lbData);
     setUserLbData(lbData as { totalPoints: number } | null);
     setIsLoading(false);
   };
 
   const fetchWalletForAirdrop = async (twitterId: string) => {
-    const wallet = await getWalletForAirdrop(twitterId);
-    setWalletForAirdrop(wallet as SangSubmitWallet);
+    const wallet = await getWalletForAirdrop(twitterId, 'SANG');
+    setWalletForAirdrop(wallet as TokenSubmitWallet);
     setIsLoading(false);
   };
 
@@ -433,14 +433,15 @@ const ClaimSangTokens = () => {
                         return;
                       }
                       setIsSubmitting(true);
-                      await submitWalletForAirdrop(
+                      await submitTokenForAirdrop(
                         twitterUser.providerData[0].uid,
                         {
                           walletAddress: primaryWallet.address,
                           userId: twitterUser.uid,
                           username: twitterUser.displayName,
                           name: twitterUser.displayName,
-                        }
+                        },
+                        'SANG'
                       );
                       await fetchWalletForAirdrop(
                         twitterUser.providerData[0].uid
