@@ -216,7 +216,7 @@ const WachAi = () => {
                       mb: 2,
                     }}
                   >
-                    Ready to Claim Your $WACH Tokens
+                    Ready to Claim Your $WACH Rewards
                   </Typography>
                   <Typography
                     variant="body1"
@@ -227,7 +227,7 @@ const WachAi = () => {
                     }}
                   >
                     Your wallet address is stored and you are ready to receive
-                    your $WACH token airdrop.
+                    your $WACH token rewards.
                   </Typography>
                   <Box
                     sx={{
@@ -308,7 +308,7 @@ const WachAi = () => {
                       mb: 2,
                     }}
                   >
-                    Add Your Wallet Address for $WACH Airdrop
+                    Add Your Wallet Address for $WACH Rewards
                   </Typography>
                   <Typography
                     variant="body1"
@@ -409,7 +409,7 @@ const WachAi = () => {
                         toast.success('Wallet submitted successfully');
                       }}
                     >
-                      {isSubmitting ? 'Submitting' : 'Submit for Airdrop'}
+                      {isSubmitting ? 'Submitting' : 'Submit for Rewards'}
                     </Button>
                   </Stack>
                 </>
@@ -457,7 +457,7 @@ const WachAi = () => {
                 }}
               >
                 Sign in with your X (Twitter) account to check if you're
-                eligible for the $WACH token airdrop.
+                eligible for the $WACH token rewards.
               </Typography>
               <Button
                 disabled={isLoading}
