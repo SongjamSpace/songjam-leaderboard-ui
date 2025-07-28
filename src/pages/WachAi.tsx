@@ -32,7 +32,7 @@ import {
 } from '../services/db/sangClaim.service';
 import { toast, Toaster } from 'react-hot-toast';
 
-const EvaOnlineXyz = () => {
+const WachAi = () => {
   const [twitterUser, setTwitterUser] = useState<User | null>(null);
 
   // const [isLeaderboardMember, setIsLeaderboardMember] = useState(false);
@@ -55,7 +55,7 @@ const EvaOnlineXyz = () => {
   // };
 
   const fetchWalletForAirdrop = async (twitterId: string) => {
-    const wallet = await getWalletForAirdrop(twitterId, 'EVA');
+    const wallet = await getWalletForAirdrop(twitterId, 'WACHAI');
     setWalletForAirdrop(wallet as TokenSubmitWallet);
     setIsLoading(false);
   };
@@ -100,7 +100,13 @@ const EvaOnlineXyz = () => {
   };
 
   return (
-    <Box sx={{ bgcolor: '#f1e3eb', minHeight: '100vh' }}>
+    <Box
+      sx={{
+        bgcolor: '#000000',
+        minHeight: '100vh',
+        fontFamily: '"DM Mono", monospace',
+      }}
+    >
       <Container
         sx={{
           pb: 2,
@@ -124,12 +130,12 @@ const EvaOnlineXyz = () => {
           <Typography
             variant="h3"
             sx={{
-              fontFamily: 'Chakra Petch, sans-serif',
+              fontFamily: '"DM Mono", monospace',
               fontWeight: 'bold',
-              color: '#4a3740',
+              color: '#ffffff',
             }}
           >
-            EVA ONLINE
+            WachAI
           </Typography>
 
           {twitterUser && (
@@ -139,15 +145,15 @@ const EvaOnlineXyz = () => {
                 sx={{
                   width: 40,
                   height: 40,
-                  border: '2px solid #ff007a',
+                  border: '2px solid #6AFF92',
                 }}
               />
               <Typography
                 variant="body1"
                 sx={{
-                  fontFamily: 'Chakra Petch, sans-serif',
+                  fontFamily: '"DM Mono", monospace',
                   fontWeight: 'bold',
-                  color: '#4a3740',
+                  color: '#ffffff',
                 }}
               >
                 {twitterUser?.displayName}
@@ -156,14 +162,14 @@ const EvaOnlineXyz = () => {
                 variant="outlined"
                 onClick={handleSignOut}
                 sx={{
-                  color: '#ff007a',
-                  borderColor: '#ff007a',
-                  fontFamily: 'Chakra Petch, sans-serif',
+                  color: '#6AFF92',
+                  borderColor: '#6AFF92',
+                  fontFamily: '"DM Mono", monospace',
                   fontWeight: 700,
                   '&:hover': {
-                    bgcolor: '#ff007a',
+                    bgcolor: '#6AFF92',
                     color: 'white',
-                    borderColor: '#ff007a',
+                    borderColor: '#6AFF92',
                   },
                   transition: 'all 0.2s',
                 }}
@@ -175,7 +181,7 @@ const EvaOnlineXyz = () => {
           )}
         </Box>
 
-        {isLoading && <LinearProgress sx={{ bgcolor: '#f1e3eb' }} />}
+        {isLoading && <LinearProgress sx={{ bgcolor: '#000000' }} />}
 
         {/* Claim Section - Only show if signed in */}
         {twitterUser ? (
@@ -189,13 +195,13 @@ const EvaOnlineXyz = () => {
             <Paper
               sx={{
                 p: 4,
-                background: 'white',
+                background: '#111111',
                 borderRadius: '15px',
-                border: '1px solid #ff007a',
+                border: '1px solid #6AFF92',
                 maxWidth: 600,
                 width: '100%',
                 textAlign: 'center',
-                fontFamily: 'Chakra Petch, sans-serif',
+                fontFamily: '"DM Mono", monospace',
               }}
             >
               {twitterUser && walletForAirdrop ? (
@@ -203,29 +209,29 @@ const EvaOnlineXyz = () => {
                   <Typography
                     variant="h5"
                     sx={{
-                      fontFamily: 'Chakra Petch, sans-serif',
+                      fontFamily: '"DM Mono", monospace',
                       fontWeight: 'bold',
-                      color: '#4a3740',
+                      color: '#ffffff',
                       mb: 2,
                     }}
                   >
-                    Ready to Claim Your $EVA Tokens
+                    Ready to Claim Your $WACH Tokens
                   </Typography>
                   <Typography
                     variant="body1"
                     sx={{
-                      fontFamily: 'Chakra Petch, sans-serif',
-                      color: '#666',
+                      fontFamily: '"DM Mono", monospace',
+                      color: '#cccccc',
                       mb: 3,
                     }}
                   >
                     Your wallet address is stored and you are ready to receive
-                    your $EVA token airdrop.
+                    your $WACH token airdrop.
                   </Typography>
                   <Box
                     sx={{
-                      background: '#faecee',
-                      border: '1px solid #ff007a',
+                      background: '#222222',
+                      border: '1px solid #6AFF92',
                       borderRadius: '10px',
                       p: 2,
                       mb: 3,
@@ -238,8 +244,8 @@ const EvaOnlineXyz = () => {
                     <Typography
                       variant="body2"
                       sx={{
-                        fontFamily: 'Chakra Petch, sans-serif',
-                        color: '#4a3740',
+                        fontFamily: '"DM Mono", monospace',
+                        color: '#ffffff',
                         fontWeight: 'bold',
                       }}
                     >
@@ -248,8 +254,8 @@ const EvaOnlineXyz = () => {
                     <Typography
                       variant="body2"
                       sx={{
-                        color: '#ff007a',
-                        fontFamily: 'monospace',
+                        color: '#6AFF92',
+                        fontFamily: '"DM Mono", monospace',
                         fontWeight: 'bold',
                       }}
                     >
@@ -270,7 +276,7 @@ const EvaOnlineXyz = () => {
                         isSubmitting || !!walletForAirdrop
                           ? '#d1002c'
                           : 'white',
-                      fontFamily: 'Chakra Petch, sans-serif',
+                      fontFamily: '"DM Mono", monospace',
                       fontWeight: 700,
                       px: 4,
                       py: 2,
@@ -295,29 +301,29 @@ const EvaOnlineXyz = () => {
                   <Typography
                     variant="h5"
                     sx={{
-                      fontFamily: 'Chakra Petch, sans-serif',
+                      fontFamily: '"DM Mono", monospace',
                       fontWeight: 'bold',
-                      color: '#4a3740',
+                      color: '#ffffff',
                       mb: 2,
                     }}
                   >
-                    Add Your Wallet Address for $EVA Airdrop
+                    Add Your Wallet Address for $WACH Airdrop
                   </Typography>
                   <Typography
                     variant="body1"
                     sx={{
-                      fontFamily: 'Chakra Petch, sans-serif',
-                      color: '#666',
+                      fontFamily: '"DM Mono", monospace',
+                      color: '#cccccc',
                       mb: 3,
                     }}
                   >
                     The wallet address you provide will be used to receive the
-                    $EVA tokens based on your total points in the{' '}
+                    $WACH tokens based on your total points in the{' '}
                     <a
                       href="https://www.evaonline.xyz/leaderboard"
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ color: '#ff007a', textDecoration: 'underline' }}
+                      style={{ color: '#6AFF92', textDecoration: 'underline' }}
                     >
                       leaderboard
                     </a>
@@ -333,27 +339,27 @@ const EvaOnlineXyz = () => {
                       sx={{
                         mb: 3,
                         '& .MuiOutlinedInput-root': {
-                          fontFamily: 'Chakra Petch, sans-serif',
+                          fontFamily: '"DM Mono", monospace',
                           '& fieldset': {
-                            borderColor: '#ff007a',
+                            borderColor: '#6AFF92',
                           },
                           '&:hover fieldset': {
-                            borderColor: '#ff007a',
+                            borderColor: '#6AFF92',
                           },
                           '&.Mui-focused fieldset': {
-                            borderColor: '#ff007a',
+                            borderColor: '#6AFF92',
                           },
                         },
                         '& .MuiInputLabel-root': {
-                          fontFamily: 'Chakra Petch, sans-serif',
-                          color: '#4a3740',
+                          fontFamily: '"DM Mono", monospace',
+                          color: '#ffffff',
                           '&.Mui-focused': {
-                            color: '#ff007a',
+                            color: '#6AFF92',
                           },
                         },
                         '& .MuiInputBase-input': {
-                          color: '#000000',
-                          fontFamily: 'Chakra Petch, sans-serif',
+                          color: '#ffffff',
+                          fontFamily: '"DM Mono", monospace',
                         },
                       }}
                     />
@@ -364,7 +370,7 @@ const EvaOnlineXyz = () => {
                       sx={{
                         bgcolor: '#ef4444',
                         color: 'white',
-                        fontFamily: 'Chakra Petch, sans-serif',
+                        fontFamily: '"DM Mono", monospace',
                         fontWeight: 700,
                         px: 4,
                         py: 2,
@@ -393,7 +399,7 @@ const EvaOnlineXyz = () => {
                             username: twitterUser.displayName,
                             name: twitterUser.displayName,
                           },
-                          'EVA'
+                          'WACHAI'
                         );
                         await fetchWalletForAirdrop(
                           twitterUser.providerData[0].uid
@@ -420,37 +426,37 @@ const EvaOnlineXyz = () => {
             <Paper
               sx={{
                 p: 4,
-                background: 'white',
+                background: '#111111',
                 borderRadius: '15px',
-                border: '1px solid #ff007a',
+                border: '1px solid #6AFF92',
                 maxWidth: 600,
                 width: '100%',
                 textAlign: 'center',
-                fontFamily: 'Chakra Petch, sans-serif',
+                fontFamily: '"DM Mono", monospace',
               }}
             >
               <Typography
                 variant="h5"
                 sx={{
-                  fontFamily: 'Chakra Petch, sans-serif',
+                  fontFamily: '"DM Mono", monospace',
                   fontWeight: 'bold',
-                  color: '#4a3740',
+                  color: '#ffffff',
                   mb: 2,
                 }}
               >
-                Are You Part of the EVA ONLINE Leaderboard?
+                Are You Part of the WACHAI Leaderboard?
               </Typography>
               <Typography
                 variant="body1"
                 sx={{
-                  fontFamily: 'Chakra Petch, sans-serif',
-                  color: '#666',
+                  fontFamily: '"DM Mono", monospace',
+                  color: '#cccccc',
                   mb: 3,
                   lineHeight: 1.6,
                 }}
               >
                 Sign in with your X (Twitter) account to check if you're
-                eligible for the $EVA token airdrop.
+                eligible for the $WACH token airdrop.
               </Typography>
               <Button
                 disabled={isLoading}
@@ -460,7 +466,7 @@ const EvaOnlineXyz = () => {
                 sx={{
                   bgcolor: '#ef4444',
                   color: 'white',
-                  fontFamily: 'Chakra Petch, sans-serif',
+                  fontFamily: '"DM Mono", monospace',
                   fontWeight: 700,
                   px: 4,
                   py: 2,
@@ -488,8 +494,8 @@ const EvaOnlineXyz = () => {
               textAlign: 'center',
               width: '100%',
               display: 'block',
-              color: '#b0b0b0',
-              fontFamily: 'Chakra Petch, sans-serif',
+              color: '#cccccc',
+              fontFamily: '"DM Mono", monospace',
             }}
           >
             Powered by{' '}
@@ -500,7 +506,7 @@ const EvaOnlineXyz = () => {
               style={{
                 fontWeight: 'bold',
                 textDecoration: 'none',
-                color: '#ff007a',
+                color: '#6AFF92',
               }}
               onMouseOver={(e) =>
                 (e.currentTarget.style.textDecoration = 'underline')
@@ -519,4 +525,4 @@ const EvaOnlineXyz = () => {
   );
 };
 
-export default EvaOnlineXyz;
+export default WachAi;

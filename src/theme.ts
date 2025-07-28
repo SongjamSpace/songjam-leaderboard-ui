@@ -104,25 +104,6 @@ const theme = createTheme({
         },
       },
     },
-    MuiTextField: {
-      styleOverrides: {
-        root: {
-          '& .MuiOutlinedInput-root': {
-            borderRadius: '12px',
-            backdropFilter: 'blur(8px)',
-            background: 'rgba(255, 255, 255, 0.05)',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-              background: 'rgba(255, 255, 255, 0.08)',
-            },
-            '&.Mui-focused': {
-              background: 'rgba(255, 255, 255, 0.1)',
-              boxShadow: '0 0 0 2px rgba(96, 165, 250, 0.3)',
-            },
-          },
-        },
-      },
-    },
     MuiDialog: {
       styleOverrides: {
         paper: {

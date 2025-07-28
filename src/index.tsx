@@ -15,10 +15,14 @@ import {
 } from '@dynamic-labs/sdk-api';
 import Elytra from './pages/Elytra';
 import EvaOnlineXyz from './pages/EvaOnlineXyz';
+import WachAi from './pages/WachAi';
 
 WebFont.load({
   google: {
-    families: ['Chakra Petch:400,700&display=swap'],
+    families: [
+      'Chakra Petch:400,700',
+      'DM Mono:300,400,500,300italic,400italic,500italic',
+    ],
   },
 });
 
@@ -67,6 +71,7 @@ function DynamicWrapper() {
           <Route path="/" element={<ClaimSangTokens />} />
           <Route path="/elytra" element={<Elytra />} />
           <Route path="/evaonlinexyz" element={<EvaOnlineXyz />} />
+          <Route path="/wachai" element={<WachAi />} />
         </Routes>
         {/* </AuthProvider> */}
       </ThemeProvider>
