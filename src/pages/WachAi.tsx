@@ -397,7 +397,9 @@ const WachAi = () => {
                           {
                             walletAddress: localWalletAddres,
                             userId: twitterUser.uid,
-                            username: twitterUser.displayName,
+                            username:
+                              (twitterUser as any).reloadUserInfo?.screenName ||
+                              '',
                             name: twitterUser.displayName,
                           },
                           'WACHAI'
