@@ -31,6 +31,7 @@ import {
   submitTokenForAirdrop,
 } from '../services/db/sangClaim.service';
 import { toast, Toaster } from 'react-hot-toast';
+import { ethers } from 'ethers';
 
 const glowAnimation = keyframes`
   0% { box-shadow: 0 0 5px rgba(139, 92, 246, 0.5); }
@@ -226,9 +227,11 @@ const ClaimSangTokens = () => {
         <Box
           sx={{
             display: 'flex',
-            justifyContent: 'space-between',
+            justifyContent: 'center',
             alignItems: 'center',
+            flexWrap: 'wrap',
             mb: 4,
+            gap: 4,
           }}
         >
           <Typography
@@ -495,6 +498,9 @@ const ClaimSangTokens = () => {
                         },
                       }}
                       onClick={async () => {
+                        if (!ethers.isAddress(localWalletAddres)) {
+                          return toast.error('Invalid Wallet Address');
+                        }
                         if (!twitterUser || !twitterUser.providerData[0].uid) {
                           toast.error(
                             'Please sign in with X to submit your wallet'
@@ -911,7 +917,7 @@ const ClaimSangTokens = () => {
         {/* <Dialog open={showConnectWallet} onClose={() => {}} maxWidth="sm">
           <DynamicEmbeddedWidget background="default" style={{ width: 350 }} />
         </Dialog> */}
-        <Toaster position="top-center" />
+        <Toaster position="bottom-center" />
       </Container>
     </Box>
   );

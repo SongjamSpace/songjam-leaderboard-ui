@@ -31,6 +31,7 @@ import {
   submitTokenForAirdrop,
 } from '../services/db/sangClaim.service';
 import { toast, Toaster } from 'react-hot-toast';
+import { ethers } from 'ethers';
 
 const EvaOnlineXyz = () => {
   const [twitterUser, setTwitterUser] = useState<User | null>(null);
@@ -379,6 +380,9 @@ const EvaOnlineXyz = () => {
                         transition: 'background 0.2s',
                       }}
                       onClick={async () => {
+                        if (!ethers.isAddress(localWalletAddres)) {
+                          return toast.error('Invalid Wallet Address');
+                        }
                         if (!twitterUser || !twitterUser.providerData[0].uid) {
                           toast.error(
                             'Please sign in with X to submit your wallet'
@@ -516,7 +520,7 @@ const EvaOnlineXyz = () => {
             </a>
           </Typography>
         </Box>
-        <Toaster position="bottom-right" />
+        <Toaster position="bottom-center" />
       </Container>
     </Box>
   );
