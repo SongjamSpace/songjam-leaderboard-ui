@@ -227,8 +227,8 @@ const WachAi = () => {
                       mb: 3,
                     }}
                   >
-                    Your wallet address is stored and you are ready to receive
-                    your $WACH token rewards.
+                    You're locked in. Wallet saved. Keep yapping, rewards will
+                    find you. 🗣️
                   </Typography>
                   <Box
                     sx={{
