@@ -331,7 +331,7 @@ const EvaOnlineXyz = () => {
                       variant="outlined"
                       value={localWalletAddres}
                       onChange={(e) => setLocalWalletAddress(e.target.value)}
-                      placeholder="Enter your wallet address (0x...)"
+                      placeholder="(0x...) Enter 42 chars wallet address"
                       sx={{
                         mb: 3,
                         '& .MuiOutlinedInput-root': {
@@ -411,6 +411,22 @@ const EvaOnlineXyz = () => {
                     >
                       {isSubmitting ? 'Submitting' : 'Submit for Airdrop'}
                     </Button>
+
+                    {/* Subtle Eligibility Message */}
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontFamily: 'Chakra Petch, sans-serif',
+                        color: '#666',
+                        mt: 2,
+                        display: 'block',
+                        textAlign: 'center',
+                        fontStyle: 'italic',
+                      }}
+                    >
+                      Only the top 1500 Yappers are eligible to receive the
+                      Airdrop
+                    </Typography>
                   </Stack>
                 </>
               )}

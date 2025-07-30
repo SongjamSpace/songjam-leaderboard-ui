@@ -16,6 +16,7 @@ import {
 import Elytra from './pages/Elytra';
 import EvaOnlineXyz from './pages/EvaOnlineXyz';
 import WachAi from './pages/WachAi';
+import Flag from './pages/Flag';
 
 WebFont.load({
   google: {
@@ -72,6 +73,7 @@ function DynamicWrapper() {
           <Route path="/elytra" element={<Elytra />} />
           <Route path="/evaonlinexyz" element={<EvaOnlineXyz />} />
           <Route path="/wachai" element={<WachAi />} />
+          <Route path="/flag" element={<Flag />} />
         </Routes>
         {/* </AuthProvider> */}
       </ThemeProvider>
