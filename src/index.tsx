@@ -14,7 +14,7 @@ import {
   SdkViewType,
 } from '@dynamic-labs/sdk-api';
 import Elytra from './pages/Elytra';
-import EvaOnlineXyz from './pages/EvaOnlineXyz';
+// import EvaOnlineXyz from './pages/EvaOnlineXyz';
 import WachAi from './pages/WachAi';
 import Flag from './pages/Flag';
 import HyperLiquid from './pages/HyperLiquidX';
@@ -73,7 +73,7 @@ function DynamicWrapper() {
         <Routes>
           <Route path="/" element={<ClaimSangTokens />} />
           <Route path="/elytra" element={<Elytra />} />
-          <Route path="/evaonlinexyz" element={<EvaOnlineXyz />} />
+          {/* <Route path="/evaonlinexyz" element={<EvaOnlineXyz />} /> */}
           <Route path="/wachai" element={<WachAi />} />
           <Route path="/flag" element={<Flag />} />
           <Route path="/hyperliquidx" element={<HyperLiquid />} />
