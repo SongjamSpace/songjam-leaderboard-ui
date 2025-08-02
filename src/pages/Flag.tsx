@@ -18,14 +18,35 @@ import {
 import { ProviderEnum } from '@dynamic-labs/sdk-api-core';
 import { Toaster, toast } from 'react-hot-toast';
 import AgenticReportComp from '../components/AgenticReportComp';
+// import TwitterPost from '../components/TwitterPost';
 import axios from 'axios';
 import {
   getLeaderboardProject,
   LeaderboardProject,
 } from '../services/db/leaderboardProjects.service';
 
+export type LocalTheme = {
+  bgcolor: string;
+  containerBg: string;
+  fontFamily: string;
+  primaryColor: string;
+  secondaryColor: string;
+  buttonBg: string;
+  buttonHoverBg: string;
+  buttonOutlinedBg: string;
+  buttonOutlinedColor: string;
+  buttonOutlinedHoverBg: string;
+  linkColor: string;
+  footerColor: string;
+  skeletonBg: string;
+  borderColor: string;
+
+  paperBg?: string;
+  paperBorder?: string;
+  accentColor?: string;
+};
 // Modular theme system
-const themes = {
+const themes: Record<string, LocalTheme> = {
   evaonlinexyz: {
     bgcolor: '#f1e3eb',
     containerBg: 'white',
@@ -90,15 +111,21 @@ const Flag = () => {
   const theme = getTheme();
 
   const fetchSlash = async (projectId: string, userId: string) => {
-    const slash = await getSlash(projectId, userId);
-    if (slash) {
-      setSlashDoc(slash);
-      fetchReport(`${projectId}_${userId}`);
-    }
-    const tweets = await getTwitterMentions(projectId, userId);
+    try {
+      const slash = await getSlash(projectId, userId);
+      if (slash) {
+        setSlashDoc(slash);
+        fetchReport(`${projectId}_${userId}`);
+      }
+      const tweets = await getTwitterMentions(projectId, userId);
 
-    setSlashedTweets(tweets);
-    setLoading(false);
+      setSlashedTweets(tweets);
+    } catch (error) {
+      console.error('Error fetching slash data:', error);
+      toast.error('Error loading tweets');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleVote = async (vote: 'defend' | 'slash') => {
@@ -292,14 +319,16 @@ const Flag = () => {
                   fullWidth
                   variant={'outlined'}
                   sx={{
-                    bgcolor: theme.buttonOutlinedBg,
-                    color: theme.buttonOutlinedColor,
+                    color: theme.linkColor,
+                    borderColor: theme.linkColor,
                     fontWeight: 700,
-                    borderColor: '#fff',
+                    fontFamily: theme.fontFamily,
                     '&:hover': {
-                      bgcolor: theme.buttonOutlinedHoverBg,
+                      bgcolor: theme.linkColor,
+                      color: 'black',
+                      borderColor: theme.linkColor,
                     },
-                    transition: 'background 0.2s',
+                    transition: 'all 0.2s',
                   }}
                   onClick={() => handleVote('slash')}
                 >
@@ -358,14 +387,16 @@ const Flag = () => {
                   fullWidth
                   variant={'outlined'}
                   sx={{
-                    bgcolor: theme.buttonOutlinedBg,
-                    color: theme.buttonOutlinedColor,
+                    color: theme.linkColor,
+                    borderColor: theme.linkColor,
                     fontWeight: 700,
-                    borderColor: theme.borderColor,
+                    fontFamily: theme.fontFamily,
                     '&:hover': {
-                      bgcolor: theme.buttonOutlinedHoverBg,
+                      bgcolor: theme.linkColor,
+                      color: 'black',
+                      borderColor: theme.linkColor,
                     },
-                    transition: 'background 0.2s',
+                    transition: 'all 0.2s',
                   }}
                   onClick={async () => {
                     await handleVote('slash');
@@ -398,12 +429,13 @@ const Flag = () => {
                 fontFamily: theme.fontFamily,
                 '&:hover': {
                   bgcolor: theme.linkColor,
-                  color: 'white',
+                  color: 'black',
                   borderColor: theme.linkColor,
                 },
                 transition: 'all 0.2s',
               }}
               onClick={async () => {
+                if (reportLoading) return;
                 setReportLoading(true);
                 await axios.post(
                   `${
@@ -418,7 +450,9 @@ const Flag = () => {
                 setReportLoading(false);
               }}
             >
-              Send Songjam for Agentic Review
+              {reportLoading
+                ? 'Generating Report...'
+                : 'Send Songjam for Agentic Review'}
             </Button>
           </Box>
         )}
@@ -455,7 +489,14 @@ const Flag = () => {
             </a>
           </Typography>
         </Box>
-        {reportInfo && <AgenticReportComp reportInfo={reportInfo} />}
+        {reportInfo && (
+          <Box mt={2}>
+            <AgenticReportComp
+              reportInfo={reportInfo}
+              theme={themes[projectId]}
+            />
+          </Box>
+        )}
         {/* Horizontally scrollable tweets */}
         <Box
           sx={{

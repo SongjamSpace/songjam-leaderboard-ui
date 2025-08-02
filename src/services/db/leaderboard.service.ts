@@ -147,6 +147,7 @@ export type UserTweetMention = {
   tweetId: string;
   earlyMultiplier: number;
   baseEngagementPoints?: number;
+  html?: string;
 };
 
 const leaderboardEndpointsIdMap: { [key: string]: string } = {

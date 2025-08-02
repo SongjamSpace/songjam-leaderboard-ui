@@ -7,6 +7,7 @@ import {
   Button,
 } from '@mui/material';
 import { AgentReport } from '../services/db/leaderboard.service';
+import { LocalTheme } from '../pages/Flag';
 
 type Props = {};
 
@@ -50,17 +51,23 @@ function getBotScoreIndicator(score: number) {
   return 'High';
 }
 
-const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
+const AgenticReportComp = ({
+  reportInfo,
+  theme,
+}: {
+  reportInfo: AgentReport;
+  theme: LocalTheme;
+}) => {
   if (!reportInfo) {
     return (
-      <Box sx={{ bgcolor: '#f1e3eb' }}>
+      <Box sx={{ bgcolor: theme.skeletonBg }}>
         <Container
           sx={{
             pb: 2,
             position: 'relative',
             zIndex: 1,
             flexGrow: 1,
-            bgcolor: 'white',
+            bgcolor: theme.containerBg,
           }}
         >
           <Box
@@ -70,7 +77,7 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              fontFamily: 'Chakra Petch, sans-serif',
+              fontFamily: theme.fontFamily,
             }}
           >
             {/* Username Skeleton */}
@@ -83,14 +90,14 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                 sx={{
                   p: 3,
                   border: '1px solid',
-                  borderColor: 'divider',
+                  borderColor: theme.borderColor,
                   borderRadius: 2,
-                  background: 'white',
+                  background: theme.paperBg,
                   width: '100%',
                   maxWidth: 600,
                   mx: 'auto',
-                  color: 'black',
-                  fontFamily: 'Chakra Petch, sans-serif',
+                  color: theme.primaryColor,
+                  fontFamily: theme.fontFamily,
                 }}
               >
                 <Skeleton
@@ -182,8 +189,8 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                 textAlign: 'center',
                 width: '100%',
                 display: 'block',
-                color: '#b0b0b0',
-                fontFamily: 'Chakra Petch, sans-serif',
+                color: theme.footerColor,
+                fontFamily: theme.fontFamily,
               }}
             >
               Powered by{' '}
@@ -194,7 +201,7 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                 style={{
                   fontWeight: 'bold',
                   textDecoration: 'none',
-                  color: '#ff007a',
+                  color: theme.linkColor,
                 }}
                 onMouseOver={(e) =>
                   (e.currentTarget.style.textDecoration = 'underline')
@@ -231,14 +238,15 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
     );
   }
   return (
-    <Box sx={{ bgcolor: '#f1e3eb' }}>
+    <Box sx={{ bgcolor: theme.containerBg }}>
       <Container
         // maxWidth="lg"
         sx={{
           position: 'relative',
           zIndex: 1,
           flexGrow: 1,
-          bgcolor: 'white',
+          bgcolor: theme.containerBg,
+          px: 0,
         }}
       >
         {/* Content */}
@@ -251,7 +259,7 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
             alignItems: 'center',
             justifyContent: 'center',
             pt: 4,
-            fontFamily: 'Chakra Petch, sans-serif',
+            fontFamily: theme.fontFamily,
           }}
         >
           {/* ActionScoreBar omitted */}
@@ -260,14 +268,15 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
             <Box
               sx={{
                 border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-                background: 'white',
+                borderColor: theme.borderColor,
+                borderRadius: '6px',
+                background: theme.paperBg,
                 width: '100%',
                 maxWidth: 600,
                 mx: 'auto',
-                color: 'black',
-                fontFamily: 'Chakra Petch, sans-serif',
+                color: theme.primaryColor,
+                fontFamily: theme.fontFamily,
+                p: 2,
               }}
             >
               <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
@@ -275,8 +284,8 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                   variant="h6"
                   sx={{
                     fontWeight: 'bold',
-                    fontFamily: 'Chakra Petch, sans-serif',
-                    color: 'black',
+                    fontFamily: theme.fontFamily,
+                    color: theme.accentColor || theme.primaryColor,
                   }}
                 >
                   Account Report
@@ -287,8 +296,8 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                 sx={{
                   fontWeight: 600,
                   mb: 0.5,
-                  fontFamily: 'Chakra Petch, sans-serif',
-                  color: 'black',
+                  fontFamily: theme.fontFamily,
+                  color: theme.accentColor || theme.primaryColor,
                 }}
               >
                 Summary
@@ -297,8 +306,8 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                 variant="body2"
                 sx={{
                   mb: 2,
-                  fontFamily: 'Chakra Petch, sans-serif',
-                  color: 'black',
+                  fontFamily: theme.fontFamily,
+                  color: theme.primaryColor,
                 }}
               >
                 {reportInfo.summary}
@@ -308,8 +317,8 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                 sx={{
                   fontWeight: 600,
                   mb: 0.5,
-                  fontFamily: 'Chakra Petch, sans-serif',
-                  color: 'black',
+                  fontFamily: theme.fontFamily,
+                  color: theme.accentColor || theme.primaryColor,
                 }}
               >
                 Replies Analysis
@@ -318,8 +327,8 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                 variant="body2"
                 sx={{
                   mb: 2,
-                  fontFamily: 'Chakra Petch, sans-serif',
-                  color: 'black',
+                  fontFamily: theme.fontFamily,
+                  color: theme.primaryColor,
                 }}
               >
                 {reportInfo.repliesAnalysis}
@@ -330,8 +339,8 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                     variant="subtitle2"
                     sx={{
                       fontWeight: 600,
-                      fontFamily: 'Chakra Petch, sans-serif',
-                      color: 'black',
+                      fontFamily: theme.fontFamily,
+                      color: theme.accentColor || theme.primaryColor,
                     }}
                   >
                     Authenticity
@@ -341,7 +350,7 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                     color="primary"
                     sx={{
                       fontWeight: 700,
-                      fontFamily: 'Chakra Petch, sans-serif',
+                      fontFamily: theme.fontFamily,
                       color: getOklchColor(
                         (reportInfo.authenticity - 1) * 11.111
                       ),
@@ -356,7 +365,7 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                     sx={{
                       display: 'inline-block',
                       fontWeight: 600,
-                      fontFamily: 'Chakra Petch, sans-serif',
+                      fontFamily: theme.fontFamily,
                       color: getOklchColor(
                         (reportInfo.authenticity - 1) * 11.111
                       ),
@@ -371,8 +380,8 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                     variant="subtitle2"
                     sx={{
                       fontWeight: 600,
-                      fontFamily: 'Chakra Petch, sans-serif',
-                      color: 'black',
+                      fontFamily: theme.fontFamily,
+                      color: theme.accentColor || theme.primaryColor,
                     }}
                   >
                     Quality
@@ -382,7 +391,7 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                     color="primary"
                     sx={{
                       fontWeight: 700,
-                      fontFamily: 'Chakra Petch, sans-serif',
+                      fontFamily: theme.fontFamily,
                       color: getOklchColor((reportInfo.quality - 1) * 11.111),
                       display: 'inline-block',
                       mr: 1,
@@ -395,7 +404,7 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                     sx={{
                       display: 'inline-block',
                       fontWeight: 600,
-                      fontFamily: 'Chakra Petch, sans-serif',
+                      fontFamily: theme.fontFamily,
                       color: getOklchColor((reportInfo.quality - 1) * 11.111),
                     }}
                   >
@@ -408,8 +417,8 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                 sx={{
                   fontWeight: 600,
                   mb: 0.5,
-                  fontFamily: 'Chakra Petch, sans-serif',
-                  color: 'black',
+                  fontFamily: theme.fontFamily,
+                  color: theme.accentColor || theme.primaryColor,
                 }}
               >
                 Explanation
@@ -417,8 +426,8 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
               <Typography
                 variant="body2"
                 sx={{
-                  fontFamily: 'Chakra Petch, sans-serif',
-                  color: 'black',
+                  fontFamily: theme.fontFamily,
+                  color: theme.primaryColor,
                   mb: 2,
                 }}
               >
@@ -429,8 +438,8 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                 sx={{
                   fontWeight: 600,
                   mb: 0.5,
-                  fontFamily: 'Chakra Petch, sans-serif',
-                  color: 'black',
+                  fontFamily: theme.fontFamily,
+                  color: theme.accentColor || theme.primaryColor,
                 }}
               >
                 Farming Indicators
@@ -440,8 +449,8 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                   <Typography
                     variant="body2"
                     sx={{
-                      color: 'black',
-                      fontFamily: 'Chakra Petch, sans-serif',
+                      color: theme.primaryColor,
+                      fontFamily: theme.fontFamily,
                     }}
                   >
                     Avg. Hashtags:{' '}
@@ -450,8 +459,8 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                   <Typography
                     variant="body2"
                     sx={{
-                      color: 'black',
-                      fontFamily: 'Chakra Petch, sans-serif',
+                      color: theme.primaryColor,
+                      fontFamily: theme.fontFamily,
                     }}
                   >
                     Avg. Mentions:{' '}
@@ -462,8 +471,8 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                   <Typography
                     variant="body2"
                     sx={{
-                      color: 'black',
-                      fontFamily: 'Chakra Petch, sans-serif',
+                      color: theme.primaryColor,
+                      fontFamily: theme.fontFamily,
                     }}
                   >
                     GM Tweet Count:{' '}
@@ -472,8 +481,8 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                   <Typography
                     variant="body2"
                     sx={{
-                      color: 'black',
-                      fontFamily: 'Chakra Petch, sans-serif',
+                      color: theme.primaryColor,
+                      fontFamily: theme.fontFamily,
                     }}
                   >
                     Call-to-Action Ratio:{' '}
@@ -486,8 +495,8 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                 sx={{
                   fontWeight: 600,
                   mb: 0.5,
-                  fontFamily: 'Chakra Petch, sans-serif',
-                  color: 'black',
+                  fontFamily: theme.fontFamily,
+                  color: theme.accentColor || theme.primaryColor,
                 }}
               >
                 Bot Likelihood Score
@@ -496,7 +505,7 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                 variant="h5"
                 sx={{
                   fontWeight: 700,
-                  fontFamily: 'Chakra Petch, sans-serif',
+                  fontFamily: theme.fontFamily,
                   mb: 1,
                   color: getOklchColor(reportInfo.botLikelihoodScore, true),
                   display: 'inline-block',
@@ -510,7 +519,7 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                 sx={{
                   display: 'inline-block',
                   fontWeight: 600,
-                  fontFamily: 'Chakra Petch, sans-serif',
+                  fontFamily: theme.fontFamily,
                   color: getOklchColor(reportInfo.botLikelihoodScore, true),
                 }}
               >
@@ -527,8 +536,8 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                 textAlign: 'center',
                 width: '100%',
                 display: 'block',
-                color: '#b0b0b0',
-                fontFamily: 'Chakra Petch, sans-serif',
+                color: theme.footerColor,
+                fontFamily: theme.fontFamily,
               }}
             >
               Powered by{' '}
@@ -539,7 +548,7 @@ const AgenticReportComp = ({ reportInfo }: { reportInfo: AgentReport }) => {
                 style={{
                   fontWeight: 'bold',
                   textDecoration: 'none',
-                  color: '#ff007a',
+                  color: theme.linkColor,
                 }}
                 onMouseOver={(e) =>
                   (e.currentTarget.style.textDecoration = 'underline')
