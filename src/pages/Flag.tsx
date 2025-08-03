@@ -24,6 +24,7 @@ import {
   getLeaderboardProject,
   LeaderboardProject,
 } from '../services/db/leaderboardProjects.service';
+import TwitterPost from '../components/TwitterPost';
 
 export type LocalTheme = {
   bgcolor: string;
@@ -511,19 +512,9 @@ const Flag = () => {
             alignItems: 'flex-start',
           }}
         >
-          {/* Example tweet IDs, replace with your own or fetch dynamically */}
-          {slashedTweets.map(({ id }) => (
-            <Box
-              key={id}
-              sx={{ minWidth: 350, maxWidth: 350, flex: '0 0 auto' }}
-            >
-              <iframe
-                loading="lazy"
-                src={`https://platform.twitter.com/embed/Tweet.html?frame=false&hideCard=false&hideThread=false&id=${id}&origin=YOUR_DOMAIN_HERE&theme=light`}
-                style={{ height: 600, width: 320 }}
-                frameBorder="0"
-                scrolling="no"
-              ></iframe>
+          {slashedTweets.map((tweet) => (
+            <Box key={tweet.id} sx={{ flex: '0 0 auto', mr: 3 }}>
+              <TwitterPost tweet={tweet} />
             </Box>
           ))}
         </Box>

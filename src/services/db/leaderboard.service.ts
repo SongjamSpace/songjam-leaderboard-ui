@@ -137,7 +137,7 @@ export type UserTweetMention = {
   quotes: number;
   views: number;
   isQuoted: boolean;
-  bookmarks: number;
+  bookmarkCount: number;
   timeParsed: Date | null;
   timestamp: number;
   text: string;
