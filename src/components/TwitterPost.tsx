@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Avatar, IconButton, Chip } from '@mui/material';
+import { Box, Typography, Avatar, Chip } from '@mui/material';
 import {
   TrendingUp,
   Favorite,
@@ -9,7 +9,7 @@ import {
   Bookmark,
 } from '@mui/icons-material';
 import { UserTweetMention } from '../services/db/leaderboard.service';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 
 interface TwitterPostProps {
   tweet: UserTweetMention;
@@ -192,9 +192,11 @@ const TwitterPost: React.FC<TwitterPostProps> = ({ tweet }) => {
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Visibility sx={{ fontSize: '16px', color: '#8899a6' }} />
+            <DriveFileRenameOutlineIcon
+              sx={{ fontSize: '16px', color: '#8899a6' }}
+            />
             <Typography sx={{ color: '#8899a6', fontSize: '13px' }}>
-              {tweet.views}
+              {tweet.quotes}
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
