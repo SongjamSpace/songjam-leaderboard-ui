@@ -180,4 +180,24 @@ export const getTwitterMentions = async (projectId: string, userId: string) => {
   return [];
 };
 
+export const submitTweet = async (
+  projectId: string,
+  username: string,
+  tweetId: string
+): Promise<boolean> => {
+  const docRef = doc(db, 'userSubmittedTweets', `${projectId}_${tweetId}`);
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    return false;
+  }
+  await setDoc(docRef, {
+    username,
+    tweetId,
+    projectId,
+    createdAt: Date.now(),
+    isAdded: false,
+  });
+  return true;
+};
+
 export { userIdExistsInLeaderboard };

@@ -16,8 +16,9 @@ import {
 import Elytra from './pages/Elytra';
 // import EvaOnlineXyz from './pages/EvaOnlineXyz';
 import WachAi from './pages/WachAi';
-import Flag from './pages/Flag';
+// import Flag from './pages/Flag';
 import HyperLiquid from './pages/HyperLiquidX';
+import Review from './pages/Review';
 
 WebFont.load({
   google: {
@@ -75,7 +76,8 @@ function DynamicWrapper() {
           <Route path="/elytra" element={<Elytra />} />
           {/* <Route path="/evaonlinexyz" element={<EvaOnlineXyz />} /> */}
           <Route path="/wachai" element={<WachAi />} />
-          <Route path="/flag" element={<Flag />} />
+          <Route path="/flag" element={<Review />} />
+          <Route path="/review" element={<Review />} />
           <Route path="/hyperliquidx" element={<HyperLiquid />} />
         </Routes>
         {/* </AuthProvider> */}
