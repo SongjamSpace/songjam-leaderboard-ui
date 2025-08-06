@@ -126,7 +126,7 @@ const HyperLiquid = (props: Props) => {
 
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+  }, []);
 
   //   useEffect(() => {
   //     const currentObserver = observer.current;
