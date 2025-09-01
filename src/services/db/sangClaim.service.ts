@@ -72,5 +72,6 @@ export const updateCreatorTokenInfo = async (
     tokenSymbol,
     creatorContractAddress,
     txHash,
+    mintedTimestampMs: Date.now(),
   });
 };
