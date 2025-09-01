@@ -279,6 +279,31 @@ const ClaimSangTokens = () => {
           )}
         </Box>
 
+        {/* Navigation */}
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            mb: 4,
+            gap: 2,
+          }}
+        >
+          <Button
+            variant="outlined"
+            href="/creator"
+            sx={{
+              color: 'rgba(255, 255, 255, 0.8)',
+              borderColor: 'rgba(255, 255, 255, 0.3)',
+              '&:hover': {
+                borderColor: '#10B981',
+                color: '#10B981',
+              },
+            }}
+          >
+            Creator Portal →
+          </Button>
+        </Box>
+
         {/* Analytics Dashboard */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12} sm={6} md={3}>

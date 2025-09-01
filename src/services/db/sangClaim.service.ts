@@ -1,7 +1,8 @@
-import { doc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 
 import { setDoc } from 'firebase/firestore';
 import { db } from '../firebase.service';
+import { CreatorTokenInfo } from '../creatorToken.service';
 
 const CLAIM_SANG_TOKENS_COLLECTION = 'sang_airdrop_wallets';
 const CLAIM_EVA_TOKENS_COLLECTION = 'eva_airdrop_wallets';
@@ -12,6 +13,11 @@ export interface TokenSubmitWallet {
   userId: string;
   username: string | null;
   name: string | null;
+  twitterId?: string | null;
+
+  tokenName?: string;
+  tokenSymbol?: string;
+  creatorContractAddress?: string;
 }
 
 export const submitTokenForAirdrop = async (
@@ -42,4 +48,29 @@ export const getWalletForAirdrop = async (
   const claimTokensRef = doc(db, collectionName, twitterId);
   const claimTokens = await getDoc(claimTokensRef);
   return claimTokens.data();
+};
+
+export const updateCreatorTokenInfo = async (
+  twitterId: string,
+  id: 'SANG' | 'EVA' | 'WACHAI',
+  {
+    tokenName,
+    tokenSymbol,
+    creatorContractAddress,
+    txHash,
+  }: {
+    tokenName: string;
+    tokenSymbol: string;
+    creatorContractAddress: string;
+    txHash: string;
+  }
+) => {
+  const collectionName = idCollectionMapping[id];
+  const claimTokensRef = doc(db, collectionName, twitterId);
+  await updateDoc(claimTokensRef, {
+    tokenName,
+    tokenSymbol,
+    creatorContractAddress,
+    txHash,
+  });
 };

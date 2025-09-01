@@ -19,6 +19,8 @@ import WachAi from './pages/WachAi';
 // import Flag from './pages/Flag';
 import HyperLiquid from './pages/HyperLiquidX';
 import Review from './pages/Review';
+// import Admin from './pages/Admin';
+import Creator from './pages/Creator';
 
 WebFont.load({
   google: {
@@ -79,6 +81,7 @@ function DynamicWrapper() {
           <Route path="/flag" element={<Review />} />
           <Route path="/review" element={<Review />} />
           <Route path="/hyperliquidx" element={<HyperLiquid />} />
+          <Route path="/creator" element={<Creator />} />
         </Routes>
         {/* </AuthProvider> */}
       </ThemeProvider>
