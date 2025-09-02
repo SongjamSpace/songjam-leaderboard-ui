@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { Box, Button, Typography, Alert, Snackbar } from '@mui/material';
+import {
+  Box,
+  Button,
+  Typography,
+  Alert,
+  Snackbar,
+  TextField,
+  Select,
+  MenuItem,
+} from '@mui/material';
 import { addL1Chain } from '../services/creatorToken.service';
 
 const AddChainFooter: React.FC = () => {
@@ -7,6 +16,14 @@ const AddChainFooter: React.FC = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Faucet state
+  const [walletAddress, setWalletAddress] = useState('');
+  const [selectedAmount, setSelectedAmount] = useState(10);
+  const [isRequestingTokens, setIsRequestingTokens] = useState(false);
+  const [showFaucetSuccess, setShowFaucetSuccess] = useState(false);
+  const [showFaucetError, setShowFaucetError] = useState(false);
+  const [faucetMessage, setFaucetMessage] = useState('');
 
   const handleAddChain = async () => {
     setIsAddingChain(true);
@@ -21,8 +38,51 @@ const AddChainFooter: React.FC = () => {
     }
   };
 
+  const handleFaucetRequest = async () => {
+    if (!walletAddress.trim()) {
+      setFaucetMessage('Please enter a wallet address');
+      setShowFaucetError(true);
+      return;
+    }
+
+    setIsRequestingTokens(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_JAM_SERVER_URL}/l1/faucet`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            address: walletAddress.trim(),
+            amount: selectedAmount,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        setFaucetMessage(
+          `Successfully requested ${selectedAmount} tokens for ${walletAddress}`
+        );
+        setShowFaucetSuccess(true);
+        setWalletAddress('');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setFaucetMessage(errorData.message || 'Failed to request tokens');
+        setShowFaucetError(true);
+      }
+    } catch (error: any) {
+      setFaucetMessage('Network error: Failed to request tokens');
+      setShowFaucetError(true);
+    } finally {
+      setIsRequestingTokens(false);
+    }
+  };
+
   return (
     <>
+      {/* Main Footer */}
       <Box
         sx={{
           position: 'fixed',
@@ -35,7 +95,7 @@ const AddChainFooter: React.FC = () => {
           borderTop: '1px solid rgba(96, 165, 250, 0.2)',
           py: 2,
           px: 3,
-          zIndex: 1000,
+          zIndex: 9,
         }}
       >
         <Box
@@ -49,7 +109,100 @@ const AddChainFooter: React.FC = () => {
             gap: 2,
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {/* Simple Faucet Section */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  fontFamily: 'Chakra Petch, sans-serif',
+                  fontSize: '0.9rem',
+                  fontWeight: 500,
+                }}
+              >
+                $SANG Faucet
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                <TextField
+                  size="small"
+                  placeholder="Wallet address"
+                  value={walletAddress}
+                  onChange={(e) => setWalletAddress(e.target.value)}
+                  sx={{
+                    width: 400,
+                    '& .MuiOutlinedInput-root': {
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      fontSize: '0.8rem',
+                      '& fieldset': {
+                        borderColor: 'rgba(96, 165, 250, 0.3)',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: 'rgba(96, 165, 250, 0.6)',
+                      },
+                    },
+                    '& .MuiInputBase-input': {
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      '&::placeholder': {
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        opacity: 1,
+                      },
+                    },
+                  }}
+                />
+
+                <Select
+                  size="small"
+                  value={selectedAmount}
+                  onChange={(e) => setSelectedAmount(e.target.value as number)}
+                  sx={{
+                    width: 70,
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    fontSize: '0.8rem',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'rgba(96, 165, 250, 0.3)',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'rgba(96, 165, 250, 0.6)',
+                    },
+                    '& .MuiSvgIcon-root': {
+                      color: 'rgba(255, 255, 255, 0.5)',
+                      fontSize: '1rem',
+                    },
+                  }}
+                >
+                  <MenuItem value={10}>10</MenuItem>
+                  <MenuItem value={20}>20</MenuItem>
+                  <MenuItem value={30}>30</MenuItem>
+                  <MenuItem value={40}>40</MenuItem>
+                  <MenuItem value={50}>50</MenuItem>
+                </Select>
+
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={handleFaucetRequest}
+                  disabled={isRequestingTokens || !walletAddress.trim()}
+                  sx={{
+                    fontSize: '0.75rem',
+                    padding: '4px 8px',
+                    borderColor: 'rgba(96, 165, 250, 0.5)',
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    '&:hover': {
+                      borderColor: 'rgba(96, 165, 250, 0.8)',
+                      backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                    },
+                    '&:disabled': {
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      color: 'rgba(255, 255, 255, 0.5)',
+                    },
+                  }}
+                >
+                  {isRequestingTokens ? '...' : 'Request'}
+                </Button>
+              </Box>
+            </Box>
+
             <Typography
               variant="body2"
               sx={{
@@ -133,6 +286,38 @@ const AddChainFooter: React.FC = () => {
           sx={{ width: '100%' }}
         >
           {errorMessage}
+        </Alert>
+      </Snackbar>
+
+      {/* Faucet Success Snackbar */}
+      <Snackbar
+        open={showFaucetSuccess}
+        autoHideDuration={6000}
+        onClose={() => setShowFaucetSuccess(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setShowFaucetSuccess(false)}
+          severity="success"
+          sx={{ width: '100%' }}
+        >
+          {faucetMessage}
+        </Alert>
+      </Snackbar>
+
+      {/* Faucet Error Snackbar */}
+      <Snackbar
+        open={showFaucetError}
+        autoHideDuration={6000}
+        onClose={() => setShowFaucetError(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setShowFaucetError(false)}
+          severity="error"
+          sx={{ width: '100%' }}
+        >
+          {faucetMessage}
         </Alert>
       </Snackbar>
     </>
