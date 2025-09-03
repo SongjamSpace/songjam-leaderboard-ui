@@ -95,7 +95,6 @@ const AddChainFooter: React.FC = () => {
           borderTop: '1px solid rgba(96, 165, 250, 0.2)',
           py: 2,
           px: 3,
-          zIndex: 9,
         }}
       >
         <Box

@@ -21,6 +21,7 @@ import HyperLiquid from './pages/HyperLiquidX';
 import Review from './pages/Review';
 // import Admin from './pages/Admin';
 import Creator from './pages/Creator';
+import { L1_CHAIN_CONFIG } from './services/creatorToken.service';
 
 WebFont.load({
   google: {
@@ -66,6 +67,23 @@ function DynamicWrapper() {
 
               rpcUrls: ['https://mainnet.base.org'],
               vanityName: 'Base Mainnet',
+            },
+            {
+              blockExplorerUrls: [L1_CHAIN_CONFIG.blockExplorerUrl],
+              chainId: L1_CHAIN_CONFIG.chainId,
+              chainName: L1_CHAIN_CONFIG.name,
+              iconUrls: [''],
+              name: L1_CHAIN_CONFIG.name,
+              nativeCurrency: {
+                decimals: 18,
+                name: L1_CHAIN_CONFIG.name,
+                symbol: L1_CHAIN_CONFIG.symbol,
+                iconUrl: '',
+              },
+              networkId: 1,
+
+              rpcUrls: [L1_CHAIN_CONFIG.rpcUrl],
+              vanityName: L1_CHAIN_CONFIG.name,
             },
           ],
         },

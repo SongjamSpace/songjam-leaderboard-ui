@@ -11,8 +11,11 @@ import {
   LinearProgress,
   Stack,
   Alert,
+  IconButton,
   keyframes,
+  Dialog,
 } from '@mui/material';
+import LogoutIcon from '@mui/icons-material/Logout';
 import {
   signInWithPopup,
   TwitterAuthProvider,
@@ -27,34 +30,27 @@ import {
   updateCreatorTokenInfo,
 } from '../services/db/sangClaim.service';
 import { toast, Toaster } from 'react-hot-toast';
-import { ethers } from 'ethers';
+import { ethers, isAddress } from 'ethers';
 import {
   CreatorTokenInfo,
-  connectWallet,
   deployCreatorToken,
   mintTokens,
   L1_CHAIN_CONFIG,
   fetchTokenBalance,
+  addCustomTokenToWallet,
 } from '../services/creatorToken.service';
 import axios from 'axios';
 import AddChainFooter from '../components/AddChainFooter';
+import {
+  DynamicEmbeddedWidget,
+  useDynamicContext,
+} from '@dynamic-labs/sdk-react-core';
 
 const glowAnimation = keyframes`
   0% { box-shadow: 0 0 5px rgba(139, 92, 246, 0.5); }
   50% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.8), 0 0 30px rgba(236, 72, 153, 0.6); }
   100% { box-shadow: 0 0 5px rgba(139, 92, 246, 0.5); }
 `;
-
-// ERC20 ABI for balance checking
-const ERC20_ABI = [
-  'function balanceOf(address owner) view returns (uint256)',
-  'function decimals() view returns (uint8)',
-  'function symbol() view returns (string)',
-  'function name() view returns (string)',
-];
-
-// SANG Token contract address on Songnet testnet
-const CREATOR_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000000'; // Replace with actual address
 
 const Creator = () => {
   const [twitterUser, setTwitterUser] = useState<User | null>(null);
@@ -68,16 +64,16 @@ const Creator = () => {
   const [creatorTokenName, setCreatorTokenName] = useState('');
   const [creatorTokenSymbol, setCreatorTokenSymbol] = useState('');
   const [isMinting, setIsMinting] = useState(false);
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
-  const [connectedWalletAddress, setConnectedWalletAddress] = useState('');
-  const [userLbInfo, setUserLbInfo] = useState<{
-    userId: string;
-    totalPoints: number;
-  } | null>(null);
+  const [isLbUser, setIsLbUser] = useState(false);
   const [checkingLbUser, setCheckingLbUser] = useState(false);
   const [mintAmount, setMintAmount] = useState('');
   const [isMintingTokens, setIsMintingTokens] = useState(false);
   const [creatorTokenBalance, setCreatorTokenBalance] = useState('0');
+  const { primaryWallet, network, handleLogOut } = useDynamicContext();
+  const [showConnectWallet, setShowConnectWallet] = useState(false);
+  const [isBalanceFetched, setIsBalanceFetched] = useState(false);
+  const [creatorTokenAirdropReceiver, setCreatorTokenAirdropReceiver] =
+    useState('');
 
   const fetchWalletForAirdrop = async (twitterId: string) => {
     try {
@@ -87,18 +83,6 @@ const Creator = () => {
         'SANG'
       )) as TokenSubmitWallet;
       setWalletForAirdrop(wallet);
-      if (wallet?.walletAddress) {
-        const balance = await fetchTokenBalance(wallet.walletAddress, '', true);
-        setNativeBalance(balance);
-        if (wallet?.creatorContractAddress) {
-          const balance = await fetchTokenBalance(
-            wallet.walletAddress,
-            wallet.creatorContractAddress,
-            false
-          );
-          setCreatorTokenBalance(balance);
-        }
-      }
     } catch (error) {
       console.error('Error fetching wallet:', error);
     } finally {
@@ -162,29 +146,20 @@ const Creator = () => {
     }
   };
 
-  const handleConnectWallet = async () => {
-    try {
-      const address = await connectWallet();
-      if (address) {
-        setIsWalletConnected(true);
-        setConnectedWalletAddress(address);
-        toast.success('Wallet connected successfully!');
-      }
-    } catch (error: any) {
-      console.error('Error connecting wallet:', error);
-      toast.error(error.message || 'Failed to connect wallet');
-    }
-  };
-
   const handleMintCreatorToken = async () => {
     if (!creatorTokenName.trim() || !creatorTokenSymbol.trim()) {
       toast.error('Please enter both token name and symbol');
       return;
     }
 
-    if (!isWalletConnected) {
+    if (!primaryWallet) {
       toast.error('Connecting wallet...');
-      await connectWallet();
+      setShowConnectWallet(true);
+      return;
+    }
+    if (!walletForAirdrop?.walletAddress) {
+      toast.error('Please submit your wallet address');
+      return;
     }
 
     setIsMinting(true);
@@ -195,7 +170,11 @@ const Creator = () => {
         decimals: 18,
       };
 
-      const result = await deployCreatorToken(tokenInfo);
+      const result = await deployCreatorToken(
+        primaryWallet,
+        walletForAirdrop.walletAddress,
+        tokenInfo
+      );
 
       if (result.success) {
         toast.success(
@@ -220,6 +199,13 @@ const Creator = () => {
   };
 
   const handleMintTokens = async () => {
+    if (
+      !creatorTokenAirdropReceiver.trim() ||
+      !isAddress(creatorTokenAirdropReceiver)
+    ) {
+      toast.error('Please enter a receiver address');
+      return;
+    }
     if (!mintAmount.trim() || isNaN(Number(mintAmount))) {
       toast.error('Please enter a valid amount');
       return;
@@ -230,16 +216,18 @@ const Creator = () => {
       return;
     }
 
-    if (!isWalletConnected) {
+    if (!primaryWallet) {
       toast.error('Connecting wallet...');
-      await connectWallet();
+      setShowConnectWallet(true);
+      return;
     }
 
     setIsMintingTokens(true);
     try {
       const result = await mintTokens(
+        primaryWallet,
         walletForAirdrop.creatorContractAddress,
-        walletForAirdrop.walletAddress,
+        creatorTokenAirdropReceiver,
         mintAmount
       );
 
@@ -248,6 +236,8 @@ const Creator = () => {
           `Successfully minted ${mintAmount} ${walletForAirdrop.tokenSymbol} tokens!`
         );
         setMintAmount('');
+        setCreatorTokenAirdropReceiver('');
+        await fetchBalances();
       } else {
         toast.error(result.error || 'Failed to mint tokens');
       }
@@ -262,18 +252,12 @@ const Creator = () => {
   const checkExistsInLb = async (userId: string) => {
     setCheckingLbUser(true);
     const res = await axios.get(
-      'https://songjamspace-leaderboard.logesh-063.workers.dev/songjamspace'
+      `https://api.songjam.space/leaderboard/lb-user-exists?projectId=songjamspace&userId=${userId}`
     );
-    const lbData = res.data as { userId: string; totalPoints: number }[];
-    if (lbData?.length) {
-      const userLbInfo = lbData.find(
-        (user: { userId: string }) => user.userId === userId
-      );
-      if (userLbInfo) {
-        await fetchWalletForAirdrop(userId);
-        setUserLbInfo(userLbInfo);
-      } else {
-      }
+    const lbData = res.data as { success: boolean; user: boolean };
+    if (lbData?.success && lbData?.user) {
+      await fetchWalletForAirdrop(userId);
+      setIsLbUser(true);
     }
     setCheckingLbUser(false);
   };
@@ -316,6 +300,51 @@ const Creator = () => {
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (primaryWallet && network) {
+      if (network !== L1_CHAIN_CONFIG.chainId) {
+        primaryWallet
+          .switchNetwork(L1_CHAIN_CONFIG.chainId)
+          .then((v) => toast.success('Switched to Songjam Genesis network'))
+          .catch((e) =>
+            toast.error('Failed to switch to Songjam Genesis network')
+          );
+      }
+      setShowConnectWallet(false);
+    }
+  }, [primaryWallet]);
+
+  const fetchBalances = async () => {
+    if (walletForAirdrop) {
+      const balance = await fetchTokenBalance(
+        primaryWallet,
+        walletForAirdrop.walletAddress,
+        '',
+        true
+      );
+      setNativeBalance(balance);
+      if (walletForAirdrop?.creatorContractAddress) {
+        const balance = await fetchTokenBalance(
+          primaryWallet,
+          walletForAirdrop.walletAddress,
+          walletForAirdrop.creatorContractAddress,
+          false
+        );
+        setCreatorTokenBalance(balance);
+      }
+      setIsBalanceFetched(true);
+    }
+  };
+  useEffect(() => {
+    if (
+      walletForAirdrop?.walletAddress &&
+      primaryWallet &&
+      network === L1_CHAIN_CONFIG.chainId
+    ) {
+      fetchBalances();
+    }
+  }, [primaryWallet, walletForAirdrop, network]);
 
   return (
     <Box
@@ -432,132 +461,142 @@ const Creator = () => {
                   }}
                 >
                   {walletForAirdrop
-                    ? 'Your $SANG Holdings'
-                    : 'Setup Wallet for Airdrop'}
+                    ? 'Your Account Holdings'
+                    : 'Setup Wallet for Airdrop & Creator Token'}
                 </Typography>
 
                 {walletForAirdrop ? (
                   <Box>
-                    <Alert severity="success" sx={{ mb: 3 }}>
+                    {/* <Alert severity="success" sx={{ mb: 3 }}>
                       Wallet address stored successfully!
-                    </Alert>
+                    </Alert> */}
 
-                    <Box
+                    {/* Wallet Address Section */}
+                    <Typography
+                      variant="body1"
                       sx={{
-                        background: 'rgba(139, 92, 246, 0.1)',
-                        border: '1px solid rgba(139, 92, 246, 0.3)',
-                        borderRadius: '10px',
-                        p: 2,
-                        mb: 3,
-                        textAlign: 'center',
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        mb: 1,
                       }}
                     >
+                      Wallet Address:
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#EC4899',
+                        fontFamily: 'monospace',
+                        fontWeight: 'bold',
+                        mb: 1,
+                      }}
+                    >
+                      {walletForAirdrop.walletAddress}
+                    </Typography>
+                    {isBalanceFetched && (
                       <Typography
                         variant="body2"
                         sx={{
-                          color: 'rgba(255, 255, 255, 0.7)',
-                          mb: 1,
-                        }}
-                      >
-                        Wallet Address:
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: '#8B5CF6',
-                          fontFamily: 'monospace',
+                          color: '#EC4899',
                           fontWeight: 'bold',
+                          mb: 3,
                         }}
                       >
-                        {walletForAirdrop.walletAddress.slice(0, 6)}...
-                        {walletForAirdrop.walletAddress.slice(-4)}
+                        Balance: {nativeBalance} $SANG
                       </Typography>
-                    </Box>
+                    )}
 
-                    <Box display={'flex'} justifyContent={'center'} gap={2}>
-                      <Box
-                        sx={{
-                          background: 'rgba(236, 72, 153, 0.1)',
-                          border: '1px solid rgba(236, 72, 153, 0.3)',
-                          borderRadius: '10px',
-                          p: 3,
-                          textAlign: 'center',
-                        }}
-                      >
+                    {/* Creator Token Address Section */}
+                    {walletForAirdrop.creatorContractAddress && (
+                      <>
+                        <Box
+                          display={'flex'}
+                          alignItems={'center'}
+                          justifyContent={'space-between'}
+                          //   gap={2}
+                          mb={1}
+                        >
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              color: 'rgba(255, 255, 255, 0.7)',
+                            }}
+                          >
+                            Creator Token Info
+                          </Typography>
+                          <Button
+                            variant="text"
+                            size="small"
+                            onClick={() => {
+                              if (
+                                walletForAirdrop.creatorContractAddress &&
+                                walletForAirdrop.tokenName &&
+                                walletForAirdrop.tokenSymbol
+                              ) {
+                                addCustomTokenToWallet(
+                                  primaryWallet,
+                                  walletForAirdrop.creatorContractAddress,
+                                  {
+                                    decimals: 18,
+                                    name: walletForAirdrop.tokenName,
+                                    symbol: walletForAirdrop.tokenSymbol,
+                                    contractAddress:
+                                      walletForAirdrop.creatorContractAddress,
+                                  }
+                                );
+                              }
+                            }}
+                          >
+                            Add to Wallet
+                          </Button>
+                        </Box>
                         <Typography
-                          variant="h6"
+                          variant="body2"
+                          sx={{
+                            color: 'rgba(255, 255, 255, 0.8)',
+                            mb: 0.5,
+                          }}
+                        >
+                          Name: {walletForAirdrop?.tokenName}
+                        </Typography>
+                        <Typography
+                          variant="body2"
                           sx={{
                             color: 'rgba(255, 255, 255, 0.8)',
                             mb: 1,
                           }}
                         >
-                          Native $SANG Balance
+                          Symbol: ${walletForAirdrop?.tokenSymbol}
                         </Typography>
                         <Typography
-                          variant="h4"
+                          variant="body2"
                           sx={{
-                            color: '#EC4899',
+                            color: '#8B5CF6',
+                            fontFamily: 'monospace',
                             fontWeight: 'bold',
-                            textShadow: `0 0 10px #EC4899`,
+                            mb: 1,
                           }}
+                          href={`https://explorer-test.avax.network/songjam/address/${walletForAirdrop.creatorContractAddress}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          component="a"
                         >
-                          {nativeBalance} $SANG
+                          Address: {walletForAirdrop.creatorContractAddress}
                         </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: 'rgba(255, 255, 255, 0.6)',
-                            display: 'block',
-                            mt: 1,
-                          }}
-                        >
-                          {L1_CHAIN_CONFIG.name} (Chain ID:{' '}
-                          {L1_CHAIN_CONFIG.chainId})
-                        </Typography>
-                      </Box>
-                      {walletForAirdrop?.creatorContractAddress && (
-                        <Box
-                          sx={{
-                            background: 'rgba(236, 72, 153, 0.1)',
-                            border: '1px solid rgba(236, 72, 153, 0.3)',
-                            borderRadius: '10px',
-                            p: 3,
-                            textAlign: 'center',
-                          }}
-                        >
+                        {isBalanceFetched && (
                           <Typography
-                            variant="h6"
+                            variant="body2"
                             sx={{
-                              color: 'rgba(255, 255, 255, 0.8)',
-                              mb: 1,
-                            }}
-                          >
-                            Creator Token Balance
-                          </Typography>
-                          <Typography
-                            variant="h4"
-                            sx={{
-                              color: '#EC4899',
+                              color: '#8B5CF6',
                               fontWeight: 'bold',
-                              textShadow: `0 0 10px #EC4899`,
+                              mb: 3,
                             }}
                           >
-                            {creatorTokenBalance} $
+                            Balance: {creatorTokenBalance} $
                             {walletForAirdrop?.tokenSymbol}
                           </Typography>
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: 'rgba(255, 255, 255, 0.6)',
-                              display: 'block',
-                              mt: 1,
-                            }}
-                          >
-                            {walletForAirdrop?.tokenName}
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
+                        )}
+                      </>
+                    )}
                   </Box>
                 ) : (
                   <Box>
@@ -569,8 +608,8 @@ const Creator = () => {
                         textAlign: 'center',
                       }}
                     >
-                      Enter your wallet address to receive the future $SANG
-                      airdrop
+                      Wallet address will receive the airdrop & manage Creator
+                      account
                     </Typography>
 
                     <Stack spacing={3}>
@@ -609,7 +648,7 @@ const Creator = () => {
                       <Button
                         variant="contained"
                         size="large"
-                        disabled={!userLbInfo || isSubmitting}
+                        disabled={!isLbUser || isSubmitting}
                         onClick={handleSubmitWallet}
                         sx={{
                           background:
@@ -629,10 +668,10 @@ const Creator = () => {
                           },
                         }}
                       >
-                        {isSubmitting ? 'Submitting...' : 'Submit for Airdrop'}
+                        {isSubmitting ? 'Submitting...' : 'Submit'}
                       </Button>
 
-                      {!userLbInfo && !checkingLbUser && (
+                      {!isLbUser && !checkingLbUser && (
                         <Box display={'flex'} justifyContent={'center'}>
                           <Alert severity="error" sx={{ mb: 3 }}>
                             <Typography variant="body2">
@@ -666,31 +705,114 @@ const Creator = () => {
                 {walletForAirdrop?.creatorContractAddress ? (
                   // Show mint tokens section if creator contract exists
                   <>
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        color: 'white',
-                        mb: 3,
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                      }}
+                    <Box
+                      display={'flex'}
+                      justifyContent={'space-between'}
+                      alignItems={'center'}
                     >
-                      Mint ${walletForAirdrop.tokenSymbol} (
-                      {walletForAirdrop.tokenName})
-                    </Typography>
+                      <Typography
+                        variant="h5"
+                        sx={{
+                          color: 'white',
+                          mb: 1,
+                          fontWeight: 'bold',
+                          textAlign: 'center',
+                        }}
+                      >
+                        Mint ${walletForAirdrop.tokenSymbol} (
+                        {walletForAirdrop.tokenName})
+                      </Typography>
 
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        color: 'rgba(255, 255, 255, 0.8)',
-                        mb: 3,
-                        textAlign: 'center',
-                      }}
-                    >
-                      Mint additional tokens to your wallet
-                    </Typography>
+                      <Box sx={{ mb: 3, textAlign: 'center' }}>
+                        {primaryWallet ? (
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 2,
+                            }}
+                          >
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontFamily: 'monospace',
+                                color: '#10B981',
+                                fontWeight: 'bold',
+                              }}
+                            >
+                              {primaryWallet?.address.slice(0, 6)}...
+                              {primaryWallet?.address.slice(-4)}
+                            </Typography>
+                            <IconButton
+                              onClick={handleLogOut}
+                              size="small"
+                              sx={{
+                                color: '#10B981',
+                                '&:hover': {
+                                  backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                },
+                              }}
+                            >
+                              <LogoutIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        ) : (
+                          <Button
+                            variant="outlined"
+                            onClick={() => setShowConnectWallet(true)}
+                            size="small"
+                            sx={{
+                              borderColor: '#10B981',
+                              color: '#10B981',
+                              '&:hover': {
+                                borderColor: '#059669',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                              },
+                            }}
+                          >
+                            Connect Wallet
+                          </Button>
+                        )}
+                      </Box>
+                    </Box>
 
                     <Stack spacing={3}>
+                      <TextField
+                        fullWidth
+                        label="Receiver Address"
+                        variant="outlined"
+                        type="text"
+                        value={creatorTokenAirdropReceiver}
+                        onChange={(e) =>
+                          setCreatorTokenAirdropReceiver(e.target.value)
+                        }
+                        placeholder="0x"
+                        disabled={isMintingTokens}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            fontFamily: 'Chakra Petch, sans-serif',
+                            '& fieldset': {
+                              borderColor: '#10B981',
+                            },
+                            '&:hover fieldset': {
+                              borderColor: '#10B981',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: '#10B981',
+                            },
+                          },
+                          '& .MuiInputLabel-root': {
+                            color: '#fff',
+                            '&.Mui-focused': {
+                              color: '#10B981',
+                            },
+                          },
+                          '& .MuiInputBase-input': {
+                            color: '#fff',
+                          },
+                        }}
+                      />
                       <TextField
                         fullWidth
                         label="Amount to Mint"
@@ -759,34 +881,86 @@ const Creator = () => {
                         {isMintingTokens ? 'Minting...' : 'Mint Tokens'}
                       </Button>
                     </Stack>
-
-                    <Alert severity="info" sx={{ mt: 3 }}>
-                      <Typography variant="body2">
-                        Mint additional {walletForAirdrop.tokenSymbol} tokens to
-                        your wallet address.
-                      </Typography>
-                    </Alert>
                   </>
                 ) : (
                   // Show create token section if no creator contract exists
                   <>
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        color: 'white',
-                        mb: 3,
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                      }}
+                    <Box
+                      display={'flex'}
+                      justifyContent={'space-between'}
+                      alignItems={'center'}
                     >
-                      Create Your Creator Token
-                    </Typography>
+                      <Typography
+                        variant="h5"
+                        sx={{
+                          color: 'white',
+                          mb: 3,
+                          fontWeight: 'bold',
+                          textAlign: 'center',
+                        }}
+                      >
+                        Create Your Creator Token
+                      </Typography>
+                      <Box sx={{ mb: 3, textAlign: 'center' }}>
+                        {primaryWallet ? (
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 2,
+                            }}
+                          >
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontFamily: 'monospace',
+                                color: '#10B981',
+                                fontWeight: 'bold',
+                              }}
+                            >
+                              {primaryWallet?.address.slice(0, 6)}...
+                              {primaryWallet?.address.slice(-4)}
+                            </Typography>
+                            <IconButton
+                              onClick={handleLogOut}
+                              size="small"
+                              sx={{
+                                color: '#10B981',
+                                '&:hover': {
+                                  backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                },
+                              }}
+                            >
+                              <LogoutIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        ) : (
+                          <Button
+                            variant="outlined"
+                            onClick={() => setShowConnectWallet(true)}
+                            size="small"
+                            sx={{
+                              borderColor: '#10B981',
+                              color: '#10B981',
+                              '&:hover': {
+                                borderColor: '#059669',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                              },
+                            }}
+                          >
+                            Connect Wallet
+                          </Button>
+                        )}
+                      </Box>
+                    </Box>
 
                     {!walletForAirdrop && (
                       <Alert severity="warning" sx={{ mb: 3 }}>
                         <Typography variant="body2">
-                          You need to submit for airdrop first to access creator
-                          token features.
+                          You need to submit your wallet address to access
+                          creator token features. This address will hold your
+                          tokens and receive future airdrops.
                         </Typography>
                       </Alert>
                     )}
@@ -802,7 +976,6 @@ const Creator = () => {
                       Mint your own ERC20 token on our L1 chain to represent
                       your brand
                     </Typography>
-
                     <Stack spacing={3}>
                       <TextField
                         fullWidth
@@ -877,7 +1050,7 @@ const Creator = () => {
                         size="large"
                         disabled={
                           isMinting ||
-                          !userLbInfo ||
+                          !isLbUser ||
                           !creatorTokenName.trim() ||
                           !creatorTokenSymbol.trim() ||
                           !walletForAirdrop
@@ -993,6 +1166,15 @@ const Creator = () => {
 
       {/* Add Chain Footer */}
       <AddChainFooter />
+      <Dialog
+        open={showConnectWallet && !primaryWallet}
+        onClose={() => {
+          setShowConnectWallet(false);
+        }}
+        maxWidth="sm"
+      >
+        <DynamicEmbeddedWidget background="default" style={{ width: 350 }} />
+      </Dialog>
     </Box>
   );
 };
