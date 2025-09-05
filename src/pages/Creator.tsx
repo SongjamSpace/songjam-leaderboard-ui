@@ -347,7 +347,6 @@ const Creator = () => {
       primaryWallet &&
       primaryWallet.chainId !== 'eip155:' + L1_CHAIN_CONFIG.chainId.toString()
     ) {
-      alert('Switching');
       primaryWallet.switchChain(L1_CHAIN_CONFIG.chainId);
     }
   }, [primaryWallet]);
