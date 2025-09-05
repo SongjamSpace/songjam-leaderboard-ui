@@ -76,8 +76,6 @@ const Creator = () => {
   const [primaryWallet] = wallets;
   const { logout } = useLogout();
 
-  console.log({ primaryWallet });
-
   const [showConnectWallet, setShowConnectWallet] = useState(false);
   const [isBalanceFetched, setIsBalanceFetched] = useState(false);
   const [creatorTokenAirdropReceiver, setCreatorTokenAirdropReceiver] =
@@ -343,6 +341,16 @@ const Creator = () => {
     // primaryWallet.disconnect();
     alert('Disconnect directly through the Wallet app/extension');
   };
+
+  useEffect(() => {
+    if (
+      primaryWallet &&
+      primaryWallet.chainId !== 'eip155:' + L1_CHAIN_CONFIG.chainId.toString()
+    ) {
+      alert('Switching');
+      primaryWallet.switchChain(L1_CHAIN_CONFIG.chainId);
+    }
+  }, [primaryWallet]);
 
   return (
     <Box
