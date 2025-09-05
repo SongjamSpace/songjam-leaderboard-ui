@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { Wallet } from '@dynamic-labs/sdk-react-core';
+// import { Wallet } from '@dynamic-labs/sdk-react-core';
 
 // ERC20 ABI for balance checking
 const ERC20_ABI = [

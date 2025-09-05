@@ -31,14 +31,11 @@
     "vite": "^5.1.0"
   },
   "dependencies": {
-    "@dynamic-labs/ethereum": "^4.25.5",
-    "@dynamic-labs/ethers-v6": "^4.25.5",
-    "@dynamic-labs/sdk-api": "^0.0.732",
-    "@dynamic-labs/sdk-react-core": "^4.25.5",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.15.10",
     "@mui/material": "^5.15.10",
+    "@privy-io/react-auth": "^2.24.0",
     "axios": "^1.6.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
