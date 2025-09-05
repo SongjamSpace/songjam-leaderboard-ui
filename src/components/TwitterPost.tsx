@@ -17,7 +17,7 @@ interface TwitterPostProps {
 
 const TwitterPost: React.FC<TwitterPostProps> = ({ tweet }) => {
   const formatTime = (timestamp: number) => {
-    const date = new Date(timestamp);
+    const date = new Date(timestamp * 1000);
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',

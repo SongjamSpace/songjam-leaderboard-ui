@@ -462,7 +462,7 @@ const Creator = () => {
                 >
                   {walletForAirdrop
                     ? 'Your Account Holdings'
-                    : 'Setup Wallet for Airdrop & Creator Token'}
+                    : 'Setup Wallet for Creator Token'}
                 </Typography>
 
                 {walletForAirdrop ? (
@@ -600,18 +600,6 @@ const Creator = () => {
                   </Box>
                 ) : (
                   <Box>
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        color: 'rgba(255, 255, 255, 0.8)',
-                        mb: 3,
-                        textAlign: 'center',
-                      }}
-                    >
-                      Wallet address will receive the airdrop & manage Creator
-                      account
-                    </Typography>
-
                     <Stack spacing={3}>
                       <TextField
                         fullWidth
