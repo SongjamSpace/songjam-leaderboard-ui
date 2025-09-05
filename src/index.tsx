@@ -6,12 +6,12 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from './theme';
 import WebFont from 'webfontloader';
-// import Elytra from './pages/Elytra';
+import Elytra from './pages/Elytra';
 // import EvaOnlineXyz from './pages/EvaOnlineXyz';
 import WachAi from './pages/WachAi';
 // import Flag from './pages/Flag';
 import HyperLiquid from './pages/HyperLiquidX';
-// import Review from './pages/Review';
+import Review from './pages/Review';
 // import Admin from './pages/Admin';
 import Creator from './pages/Creator';
 import { L1_CHAIN_CONFIG } from './services/creatorToken.service';
@@ -82,11 +82,11 @@ function Web3Wrapper() {
         {/* <AuthProvider> */}
         <Routes>
           <Route path="/" element={<ClaimSangTokens />} />
-          {/* <Route path="/elytra" element={<Elytra />} /> */}
+          <Route path="/elytra" element={<Elytra />} />
           {/* <Route path="/evaonlinexyz" element={<EvaOnlineXyz />} /> */}
           <Route path="/wachai" element={<WachAi />} />
-          {/* <Route path="/flag" element={<Review />} />
-          <Route path="/review" element={<Review />} /> */}
+          <Route path="/flag" element={<Review />} />
+          <Route path="/review" element={<Review />} />
           <Route path="/hyperliquidx" element={<HyperLiquid />} />
           <Route path="/creator" element={<Creator />} />
         </Routes>
