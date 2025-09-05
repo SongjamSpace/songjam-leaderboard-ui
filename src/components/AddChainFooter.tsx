@@ -85,54 +85,75 @@ const AddChainFooter: React.FC = () => {
       {/* Main Footer */}
       <Box
         sx={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
           background:
             'linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95))',
           backdropFilter: 'blur(20px)',
           borderTop: '1px solid rgba(96, 165, 250, 0.2)',
           py: 2,
           px: 3,
+          mt: 'auto',
+          position: 'relative',
+          zIndex: 1,
         }}
       >
         <Box
           sx={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            flexDirection: { xs: 'column', sm: 'row' },
             maxWidth: 1200,
             mx: 'auto',
-            flexWrap: 'wrap',
-            gap: 2,
+            gap: { xs: 3, sm: 2 },
           }}
         >
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2,
+              width: '100%',
+            }}
+          >
             {/* Simple Faucet Section */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1,
+                width: '100%',
+              }}
+            >
               <Typography
                 variant="body2"
                 sx={{
                   color: 'rgba(255, 255, 255, 0.8)',
                   fontFamily: 'Chakra Petch, sans-serif',
-                  fontSize: '0.9rem',
+                  fontSize: { xs: '1rem', sm: '0.9rem' },
                   fontWeight: 500,
                 }}
               >
                 $SANG Faucet
               </Typography>
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 1,
+                  alignItems: 'center',
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  width: { xs: '100%', sm: 'auto' },
+                }}
+              >
                 <TextField
                   size="small"
                   placeholder="Wallet address"
                   value={walletAddress}
                   onChange={(e) => setWalletAddress(e.target.value)}
                   sx={{
-                    width: 400,
+                    width: { xs: '100%', sm: 400 },
                     '& .MuiOutlinedInput-root': {
                       color: 'rgba(255, 255, 255, 0.9)',
-                      fontSize: '0.8rem',
+                      fontSize: { xs: '0.9rem', sm: '0.8rem' },
                       '& fieldset': {
                         borderColor: 'rgba(96, 165, 250, 0.3)',
                       },
@@ -150,55 +171,67 @@ const AddChainFooter: React.FC = () => {
                   }}
                 />
 
-                <Select
-                  size="small"
-                  value={selectedAmount}
-                  onChange={(e) => setSelectedAmount(e.target.value as number)}
+                <Box
                   sx={{
-                    width: 70,
-                    color: 'rgba(255, 255, 255, 0.9)',
-                    fontSize: '0.8rem',
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgba(96, 165, 250, 0.3)',
-                    },
-                    '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgba(96, 165, 250, 0.6)',
-                    },
-                    '& .MuiSvgIcon-root': {
-                      color: 'rgba(255, 255, 255, 0.5)',
-                      fontSize: '1rem',
-                    },
+                    display: 'flex',
+                    gap: 1,
+                    alignItems: 'center',
+                    width: { xs: '100%', sm: 'auto' },
                   }}
                 >
-                  <MenuItem value={10}>10</MenuItem>
-                  <MenuItem value={20}>20</MenuItem>
-                  <MenuItem value={30}>30</MenuItem>
-                  <MenuItem value={40}>40</MenuItem>
-                  <MenuItem value={50}>50</MenuItem>
-                </Select>
+                  <Select
+                    size="small"
+                    value={selectedAmount}
+                    onChange={(e) =>
+                      setSelectedAmount(e.target.value as number)
+                    }
+                    sx={{
+                      width: { xs: '100%', sm: 70 },
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      fontSize: { xs: '0.9rem', sm: '0.8rem' },
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgba(96, 165, 250, 0.3)',
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgba(96, 165, 250, 0.6)',
+                      },
+                      '& .MuiSvgIcon-root': {
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        fontSize: '1rem',
+                      },
+                    }}
+                  >
+                    <MenuItem value={10}>10</MenuItem>
+                    <MenuItem value={20}>20</MenuItem>
+                    <MenuItem value={30}>30</MenuItem>
+                    <MenuItem value={40}>40</MenuItem>
+                    <MenuItem value={50}>50</MenuItem>
+                  </Select>
 
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={handleFaucetRequest}
-                  disabled={isRequestingTokens || !walletAddress.trim()}
-                  sx={{
-                    fontSize: '0.75rem',
-                    padding: '4px 8px',
-                    borderColor: 'rgba(96, 165, 250, 0.5)',
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    '&:hover': {
-                      borderColor: 'rgba(96, 165, 250, 0.8)',
-                      backgroundColor: 'rgba(96, 165, 250, 0.1)',
-                    },
-                    '&:disabled': {
-                      borderColor: 'rgba(255, 255, 255, 0.3)',
-                      color: 'rgba(255, 255, 255, 0.5)',
-                    },
-                  }}
-                >
-                  {isRequestingTokens ? '...' : 'Request'}
-                </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={handleFaucetRequest}
+                    disabled={isRequestingTokens || !walletAddress.trim()}
+                    sx={{
+                      fontSize: { xs: '0.8rem', sm: '0.75rem' },
+                      padding: { xs: '8px 16px', sm: '4px 8px' },
+                      borderColor: 'rgba(96, 165, 250, 0.5)',
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      width: { xs: '100%', sm: 'auto' },
+                      '&:hover': {
+                        borderColor: 'rgba(96, 165, 250, 0.8)',
+                        backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                      },
+                      '&:disabled': {
+                        borderColor: 'rgba(255, 255, 255, 0.3)',
+                        color: 'rgba(255, 255, 255, 0.5)',
+                      },
+                    }}
+                  >
+                    {isRequestingTokens ? '...' : 'Request'}
+                  </Button>
+                </Box>
               </Box>
             </Box>
 
@@ -207,6 +240,8 @@ const AddChainFooter: React.FC = () => {
               sx={{
                 color: 'rgba(255, 255, 255, 0.7)',
                 fontFamily: 'Chakra Petch, sans-serif',
+                fontSize: { xs: '0.9rem', sm: '0.875rem' },
+                textAlign: { xs: 'center', sm: 'left' },
               }}
             >
               Powered by{' '}
@@ -233,12 +268,13 @@ const AddChainFooter: React.FC = () => {
 
           <Button
             variant="outlined"
-            size="small"
             onClick={handleAddChain}
             disabled={isAddingChain}
             sx={{
               borderColor: 'rgba(96, 165, 250, 0.5)',
               color: 'rgba(255, 255, 255, 0.8)',
+              fontSize: { xs: '0.8rem', sm: '0.75rem' },
+              width: { xs: '100%', sm: '400px' },
               '&:hover': {
                 borderColor: 'rgba(96, 165, 250, 0.8)',
                 backgroundColor: 'rgba(96, 165, 250, 0.1)',
@@ -251,7 +287,7 @@ const AddChainFooter: React.FC = () => {
           >
             {isAddingChain
               ? 'Adding Chain...'
-              : 'Add Songjam Genesis L1 to MetaMask'}
+              : 'Add Songjam Genesis to Wallet '}
           </Button>
         </Box>
       </Box>

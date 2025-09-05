@@ -14,6 +14,7 @@ import {
   IconButton,
   keyframes,
   Dialog,
+  Divider,
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import {
@@ -357,8 +358,10 @@ const Creator = () => {
         minHeight: '100vh',
         background: `linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)`,
         position: 'relative',
-        py: 4,
+        pt: 4,
         overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
         '&:before': {
           content: '""',
           position: 'fixed',
@@ -376,16 +379,20 @@ const Creator = () => {
         },
       }}
     >
-      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
+      <Container
+        maxWidth="xl"
+        sx={{ position: 'relative', zIndex: 1, flex: 1 }}
+      >
         {/* Header */}
         <Box
           sx={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            flexDirection: { xs: 'column', sm: 'row' },
             flexWrap: 'wrap',
-            mb: 4,
-            gap: 4,
+            mb: { xs: 3, md: 4 },
+            gap: { xs: 2, sm: 4 },
           }}
         >
           <Typography
@@ -396,6 +403,9 @@ const Creator = () => {
               WebkitTextFillColor: 'transparent',
               fontWeight: 'bold',
               textShadow: '0 0 20px rgba(236, 72, 153, 0.3)',
+              fontSize: { xs: '1.8rem', sm: '2.2rem', md: '3rem' },
+              textAlign: { xs: 'center', sm: 'left' },
+              width: { xs: '100%', sm: 'auto' },
             }}
           >
             Creator Portal
@@ -406,31 +416,47 @@ const Creator = () => {
               sx={{
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 gap: 2,
+                width: { xs: '100%', sm: 'auto' },
               }}
             >
-              <Avatar
-                src={twitterUser?.photoURL || undefined}
+              <Box
                 sx={{
-                  width: 40,
-                  height: 40,
-                  border: '2px solid #8B5CF6',
-                  boxShadow: '0 0 10px #8B5CF6',
-                }}
-              />
-              <Typography
-                variant="body1"
-                sx={{
-                  color: 'white',
-                  fontWeight: 'medium',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: { xs: 1, sm: 2 },
                 }}
               >
-                {twitterUser?.displayName}
-              </Typography>
+                <Avatar
+                  src={twitterUser?.photoURL || undefined}
+                  sx={{
+                    width: { xs: 32, sm: 40 },
+                    height: { xs: 32, sm: 40 },
+                    border: '2px solid #8B5CF6',
+                    boxShadow: '0 0 10px #8B5CF6',
+                  }}
+                />
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: 'white',
+                    fontWeight: 'medium',
+                    fontSize: { xs: '0.9rem', sm: '1rem' },
+                    textAlign: { xs: 'center', sm: 'left' },
+                  }}
+                >
+                  {twitterUser?.displayName}
+                </Typography>
+              </Box>
               <Button
                 variant="outlined"
                 onClick={handleSignOut}
-                sx={{ color: 'white' }}
+                sx={{
+                  color: 'white',
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                  px: { xs: 2, sm: 3 },
+                }}
                 size="small"
               >
                 Sign Out
@@ -443,12 +469,209 @@ const Creator = () => {
 
         {/* Main Content */}
         {twitterUser ? (
-          <Grid container spacing={4}>
+          <Grid container spacing={{ xs: 2, md: 4 }}>
+            {/* Mobile: Show mint tokens section first when creator contract exists */}
+            {walletForAirdrop?.creatorContractAddress && (
+              <Grid item xs={12} sx={{ display: { xs: 'block', md: 'none' } }}>
+                <Paper
+                  sx={{
+                    p: { xs: 3, md: 4 },
+                    background: 'rgba(0, 0, 0, 0.3)',
+                    borderRadius: '15px',
+                    border: '1px solid #10B981',
+                    mb: 2,
+                  }}
+                >
+                  {/* Mint tokens section for mobile */}
+                  <Box
+                    display={'flex'}
+                    justifyContent={'space-between'}
+                    alignItems={'center'}
+                    flexDirection={{ xs: 'column', sm: 'row' }}
+                    gap={2}
+                    mb={2}
+                  >
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        color: 'white',
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                        fontSize: { xs: '1.3rem', sm: '1.5rem' },
+                      }}
+                    >
+                      Mint ${walletForAirdrop.tokenSymbol} (
+                      {walletForAirdrop.tokenName})
+                    </Typography>
+
+                    <Box sx={{ textAlign: 'center' }}>
+                      {primaryWallet ? (
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 1,
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontFamily: 'monospace',
+                              color: '#10B981',
+                              fontWeight: 'bold',
+                              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            }}
+                          >
+                            {primaryWallet?.address.slice(0, 6)}...
+                            {primaryWallet?.address.slice(-4)}
+                          </Typography>
+                          <IconButton
+                            onClick={handleLogOut}
+                            size="small"
+                            sx={{
+                              color: '#10B981',
+                              '&:hover': {
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                              },
+                            }}
+                          >
+                            <LogoutIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      ) : (
+                        <Button
+                          variant="outlined"
+                          onClick={() => connectWallet()}
+                          size="small"
+                          sx={{
+                            borderColor: '#10B981',
+                            color: '#10B981',
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            '&:hover': {
+                              borderColor: '#059669',
+                              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            },
+                          }}
+                        >
+                          Connect Wallet
+                        </Button>
+                      )}
+                    </Box>
+                  </Box>
+
+                  <Stack spacing={2}>
+                    <TextField
+                      fullWidth
+                      label="Receiver Address"
+                      variant="outlined"
+                      type="text"
+                      value={creatorTokenAirdropReceiver}
+                      onChange={(e) =>
+                        setCreatorTokenAirdropReceiver(e.target.value)
+                      }
+                      placeholder="0x"
+                      disabled={isMintingTokens}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          fontFamily: 'Chakra Petch, sans-serif',
+                          '& fieldset': {
+                            borderColor: '#10B981',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: '#10B981',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#10B981',
+                          },
+                        },
+                        '& .MuiInputLabel-root': {
+                          color: '#fff',
+                          '&.Mui-focused': {
+                            color: '#10B981',
+                          },
+                        },
+                        '& .MuiInputBase-input': {
+                          color: '#fff',
+                        },
+                      }}
+                    />
+                    <TextField
+                      fullWidth
+                      label="Amount to Mint"
+                      variant="outlined"
+                      type="number"
+                      value={mintAmount}
+                      onChange={(e) => setMintAmount(e.target.value)}
+                      placeholder="e.g., 1000"
+                      disabled={isMintingTokens}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          fontFamily: 'Chakra Petch, sans-serif',
+                          '& fieldset': {
+                            borderColor: '#10B981',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: '#10B981',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#10B981',
+                          },
+                        },
+                        '& .MuiInputLabel-root': {
+                          color: '#fff',
+                          '&.Mui-focused': {
+                            color: '#10B981',
+                          },
+                        },
+                        '& .MuiInputBase-input': {
+                          color: '#fff',
+                        },
+                      }}
+                    />
+
+                    <Button
+                      variant="contained"
+                      size="large"
+                      disabled={
+                        isMintingTokens ||
+                        !mintAmount.trim() ||
+                        isNaN(Number(mintAmount))
+                      }
+                      onClick={handleMintTokens}
+                      sx={{
+                        background: 'linear-gradient(45deg, #10B981, #059669)',
+                        color: 'white',
+                        px: 3,
+                        py: 1.5,
+                        borderRadius: '25px',
+                        fontWeight: 'bold',
+                        textTransform: 'none',
+                        fontSize: { xs: '0.9rem', sm: '1rem' },
+                        boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)',
+                        '&:hover': {
+                          background:
+                            'linear-gradient(45deg, #059669, #047857)',
+                          boxShadow: '0 6px 20px rgba(16, 185, 129, 0.4)',
+                        },
+                        '&:disabled': {
+                          background: 'rgba(16, 185, 129, 0.3)',
+                          color: 'rgba(255, 255, 255, 0.5)',
+                        },
+                      }}
+                    >
+                      {isMintingTokens ? 'Minting...' : 'Mint Tokens'}
+                    </Button>
+                  </Stack>
+                </Paper>
+              </Grid>
+            )}
+
             {/* Left Column - Wallet & Balance */}
             <Grid item xs={12} md={6}>
               <Paper
                 sx={{
-                  p: 4,
+                  p: { xs: 3, md: 4 },
                   background: 'rgba(0, 0, 0, 0.3)',
                   borderRadius: '15px',
                   border: '1px solid #8B5CF6',
@@ -460,9 +683,10 @@ const Creator = () => {
                   variant="h5"
                   sx={{
                     color: 'white',
-                    mb: 3,
+                    mb: { xs: 2, md: 3 },
                     fontWeight: 'bold',
                     textAlign: 'center',
+                    fontSize: { xs: '1.3rem', sm: '1.5rem', md: '1.75rem' },
                   }}
                 >
                   {walletForAirdrop
@@ -482,6 +706,7 @@ const Creator = () => {
                       sx={{
                         color: 'rgba(255, 255, 255, 0.7)',
                         mb: 1,
+                        fontSize: { xs: '0.9rem', sm: '1rem' },
                       }}
                     >
                       Wallet Address:
@@ -493,6 +718,8 @@ const Creator = () => {
                         fontFamily: 'monospace',
                         fontWeight: 'bold',
                         mb: 1,
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        wordBreak: 'break-all',
                       }}
                     >
                       {walletForAirdrop.walletAddress}
@@ -517,13 +744,13 @@ const Creator = () => {
                           display={'flex'}
                           alignItems={'center'}
                           justifyContent={'space-between'}
-                          //   gap={2}
-                          mb={1}
+                          gap={{ xs: 1, sm: 0 }}
                         >
                           <Typography
                             variant="body1"
                             sx={{
                               color: 'rgba(255, 255, 255, 0.7)',
+                              fontSize: { xs: '0.9rem', sm: '1rem' },
                             }}
                           >
                             Creator Token Info
@@ -550,15 +777,21 @@ const Creator = () => {
                                 );
                               }
                             }}
+                            sx={{
+                              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            }}
                           >
                             Add to Wallet
                           </Button>
                         </Box>
+                        <Divider />
                         <Typography
                           variant="body2"
                           sx={{
+                            mt: 1.5,
                             color: 'rgba(255, 255, 255, 0.8)',
                             mb: 0.5,
+                            fontSize: { xs: '0.8rem', sm: '0.875rem' },
                           }}
                         >
                           Name: {walletForAirdrop?.tokenName}
@@ -568,6 +801,7 @@ const Creator = () => {
                           sx={{
                             color: 'rgba(255, 255, 255, 0.8)',
                             mb: 1,
+                            fontSize: { xs: '0.8rem', sm: '0.875rem' },
                           }}
                         >
                           Symbol: ${walletForAirdrop?.tokenSymbol}
@@ -579,6 +813,8 @@ const Creator = () => {
                             fontFamily: 'monospace',
                             fontWeight: 'bold',
                             mb: 1,
+                            fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                            wordBreak: 'break-all',
                           }}
                           href={`https://explorer-test.avax.network/songjam/address/${walletForAirdrop.creatorContractAddress}`}
                           target="_blank"
@@ -605,7 +841,7 @@ const Creator = () => {
                   </Box>
                 ) : (
                   <Box>
-                    <Stack spacing={3}>
+                    <Stack spacing={{ xs: 2, md: 3 }}>
                       <TextField
                         fullWidth
                         label="Wallet Address"
@@ -628,12 +864,14 @@ const Creator = () => {
                           },
                           '& .MuiInputLabel-root': {
                             color: '#fff',
+                            fontSize: { xs: '0.9rem', sm: '1rem' },
                             '&.Mui-focused': {
                               color: '#8B5CF6',
                             },
                           },
                           '& .MuiInputBase-input': {
                             color: '#fff',
+                            fontSize: { xs: '0.9rem', sm: '1rem' },
                           },
                         }}
                       />
@@ -647,12 +885,12 @@ const Creator = () => {
                           background:
                             'linear-gradient(45deg, #8B5CF6, #EC4899)',
                           color: 'white',
-                          px: 4,
-                          py: 2,
+                          px: { xs: 3, md: 4 },
+                          py: { xs: 1.5, md: 2 },
                           borderRadius: '25px',
                           fontWeight: 'bold',
                           textTransform: 'none',
-                          fontSize: '1.1rem',
+                          fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
                           boxShadow: '0 4px 15px rgba(139, 92, 246, 0.3)',
                           '&:hover': {
                             background:
@@ -692,12 +930,16 @@ const Creator = () => {
             <Grid item xs={12} md={6}>
               <Paper
                 sx={{
-                  p: 4,
+                  p: { xs: 3, md: 4 },
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  borderRadius: '15px',
+                  border: '1px solid #10B981',
+                  display: { xs: 'none', md: 'block' },
                 }}
               >
                 {walletForAirdrop?.creatorContractAddress ? (
-                  // Show mint tokens section if creator contract exists
-                  <>
+                  // Show mint tokens section if creator contract exists (hidden on mobile)
+                  <Box>
                     <Box
                       display={'flex'}
                       justifyContent={'space-between'}
@@ -874,7 +1116,7 @@ const Creator = () => {
                         {isMintingTokens ? 'Minting...' : 'Mint Tokens'}
                       </Button>
                     </Stack>
-                  </>
+                  </Box>
                 ) : (
                   // Show create token section if no creator contract exists
                   <>
@@ -882,26 +1124,33 @@ const Creator = () => {
                       display={'flex'}
                       justifyContent={'space-between'}
                       alignItems={'center'}
+                      flexDirection={{ xs: 'column', sm: 'row' }}
+                      gap={{ xs: 2, sm: 0 }}
+                      mb={{ xs: 2, md: 3 }}
                     >
                       <Typography
                         variant="h5"
                         sx={{
                           color: 'white',
-                          mb: 3,
                           fontWeight: 'bold',
                           textAlign: 'center',
+                          fontSize: {
+                            xs: '1.3rem',
+                            sm: '1.5rem',
+                            md: '1.75rem',
+                          },
                         }}
                       >
                         Create Your Creator Token
                       </Typography>
-                      <Box sx={{ mb: 3, textAlign: 'center' }}>
+                      <Box sx={{ textAlign: 'center' }}>
                         {primaryWallet ? (
                           <Box
                             sx={{
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              gap: 2,
+                              gap: { xs: 1, sm: 2 },
                             }}
                           >
                             <Typography
@@ -910,6 +1159,7 @@ const Creator = () => {
                                 fontFamily: 'monospace',
                                 color: '#10B981',
                                 fontWeight: 'bold',
+                                fontSize: { xs: '0.75rem', sm: '0.875rem' },
                               }}
                             >
                               {primaryWallet?.address.slice(0, 6)}...
@@ -936,6 +1186,7 @@ const Creator = () => {
                             sx={{
                               borderColor: '#10B981',
                               color: '#10B981',
+                              fontSize: { xs: '0.75rem', sm: '0.875rem' },
                               '&:hover': {
                                 borderColor: '#059669',
                                 backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -962,14 +1213,15 @@ const Creator = () => {
                       variant="body1"
                       sx={{
                         color: 'rgba(255, 255, 255, 0.8)',
-                        mb: 3,
+                        mb: { xs: 2, md: 3 },
                         textAlign: 'center',
+                        fontSize: { xs: '0.9rem', sm: '1rem' },
                       }}
                     >
                       Mint your own ERC20 token on our L1 chain to represent
                       your brand
                     </Typography>
-                    <Stack spacing={3}>
+                    <Stack spacing={{ xs: 2, md: 3 }}>
                       <TextField
                         fullWidth
                         label="Token Name"
@@ -993,12 +1245,14 @@ const Creator = () => {
                           },
                           '& .MuiInputLabel-root': {
                             color: '#fff',
+                            fontSize: { xs: '0.9rem', sm: '1rem' },
                             '&.Mui-focused': {
                               color: '#10B981',
                             },
                           },
                           '& .MuiInputBase-input': {
                             color: '#fff',
+                            fontSize: { xs: '0.9rem', sm: '1rem' },
                           },
                         }}
                       />
@@ -1028,12 +1282,14 @@ const Creator = () => {
                           },
                           '& .MuiInputLabel-root': {
                             color: '#fff',
+                            fontSize: { xs: '0.9rem', sm: '1rem' },
                             '&.Mui-focused': {
                               color: '#10B981',
                             },
                           },
                           '& .MuiInputBase-input': {
                             color: '#fff',
+                            fontSize: { xs: '0.9rem', sm: '1rem' },
                           },
                         }}
                       />
@@ -1053,12 +1309,12 @@ const Creator = () => {
                           background:
                             'linear-gradient(45deg, #10B981, #059669)',
                           color: 'white',
-                          px: 4,
-                          py: 2,
+                          px: { xs: 3, md: 4 },
+                          py: { xs: 1.5, md: 2 },
                           borderRadius: '25px',
                           fontWeight: 'bold',
                           textTransform: 'none',
-                          fontSize: '1.1rem',
+                          fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
                           boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)',
                           '&:hover': {
                             background:
@@ -1092,12 +1348,13 @@ const Creator = () => {
             sx={{
               display: 'flex',
               justifyContent: 'center',
-              my: 4,
+              my: { xs: 3, md: 4 },
+              px: { xs: 2, sm: 0 },
             }}
           >
             <Paper
               sx={{
-                p: 4,
+                p: { xs: 3, md: 4 },
                 background: 'rgba(0, 0, 0, 0.3)',
                 borderRadius: '15px',
                 border: '1px solid #8B5CF6',
@@ -1112,6 +1369,7 @@ const Creator = () => {
                   color: 'white',
                   mb: 2,
                   fontWeight: 'bold',
+                  fontSize: { xs: '1.3rem', sm: '1.5rem', md: '1.75rem' },
                 }}
               >
                 Signing in with X...
@@ -1120,8 +1378,9 @@ const Creator = () => {
                 variant="body1"
                 sx={{
                   color: 'rgba(255, 255, 255, 0.8)',
-                  mb: 3,
+                  mb: { xs: 2, md: 3 },
                   lineHeight: 1.6,
+                  fontSize: { xs: '0.9rem', sm: '1rem' },
                 }}
               >
                 Please complete the X authentication to access the creator
@@ -1135,12 +1394,12 @@ const Creator = () => {
                 sx={{
                   background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
                   color: 'white',
-                  px: 4,
-                  py: 2,
+                  px: { xs: 3, md: 4 },
+                  py: { xs: 1.5, md: 2 },
                   borderRadius: '25px',
                   fontWeight: 'bold',
                   textTransform: 'none',
-                  fontSize: '1.1rem',
+                  fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
                   boxShadow: '0 4px 15px rgba(139, 92, 246, 0.3)',
                   '&:hover': {
                     background: 'linear-gradient(45deg, #7c3aed, #db2777)',
