@@ -42,9 +42,11 @@ import {
 import axios from 'axios';
 import AddChainFooter from '../components/AddChainFooter';
 import {
-  DynamicEmbeddedWidget,
-  useDynamicContext,
-} from '@dynamic-labs/sdk-react-core';
+  useConnectWallet,
+  useWallets,
+  useLogout,
+  useSessionSigners,
+} from '@privy-io/react-auth';
 
 const glowAnimation = keyframes`
   0% { box-shadow: 0 0 5px rgba(139, 92, 246, 0.5); }
@@ -69,11 +71,20 @@ const Creator = () => {
   const [mintAmount, setMintAmount] = useState('');
   const [isMintingTokens, setIsMintingTokens] = useState(false);
   const [creatorTokenBalance, setCreatorTokenBalance] = useState('0');
-  const { primaryWallet, network, handleLogOut } = useDynamicContext();
+  //   const { primaryWallet, network, handleLogOut } = useDynamicContext();
+  const { wallets } = useWallets();
+  const [primaryWallet] = wallets;
+  const { logout } = useLogout();
+
+  console.log({ primaryWallet });
+
   const [showConnectWallet, setShowConnectWallet] = useState(false);
   const [isBalanceFetched, setIsBalanceFetched] = useState(false);
   const [creatorTokenAirdropReceiver, setCreatorTokenAirdropReceiver] =
     useState('');
+
+  const { connectWallet } = useConnectWallet();
+  const { removeSessionSigners } = useSessionSigners();
 
   const fetchWalletForAirdrop = async (twitterId: string) => {
     try {
@@ -301,24 +312,9 @@ const Creator = () => {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (primaryWallet && network) {
-      if (network !== L1_CHAIN_CONFIG.chainId) {
-        primaryWallet
-          .switchNetwork(L1_CHAIN_CONFIG.chainId)
-          .then((v) => toast.success('Switched to Songjam Genesis network'))
-          .catch((e) =>
-            toast.error('Failed to switch to Songjam Genesis network')
-          );
-      }
-      setShowConnectWallet(false);
-    }
-  }, [primaryWallet]);
-
   const fetchBalances = async () => {
     if (walletForAirdrop) {
       const balance = await fetchTokenBalance(
-        primaryWallet,
         walletForAirdrop.walletAddress,
         '',
         true
@@ -326,7 +322,6 @@ const Creator = () => {
       setNativeBalance(balance);
       if (walletForAirdrop?.creatorContractAddress) {
         const balance = await fetchTokenBalance(
-          primaryWallet,
           walletForAirdrop.walletAddress,
           walletForAirdrop.creatorContractAddress,
           false
@@ -337,14 +332,17 @@ const Creator = () => {
     }
   };
   useEffect(() => {
-    if (
-      walletForAirdrop?.walletAddress &&
-      primaryWallet &&
-      network === L1_CHAIN_CONFIG.chainId
-    ) {
+    if (walletForAirdrop?.walletAddress) {
       fetchBalances();
     }
-  }, [primaryWallet, walletForAirdrop, network]);
+  }, [walletForAirdrop]);
+
+  const handleLogOut = async () => {
+    // await removeSessionSigners(primaryWallet);
+    // await logout();
+    // primaryWallet.disconnect();
+    alert('Disconnect directly in the Wallet');
+  };
 
   return (
     <Box
@@ -748,7 +746,7 @@ const Creator = () => {
                         ) : (
                           <Button
                             variant="outlined"
-                            onClick={() => setShowConnectWallet(true)}
+                            onClick={() => connectWallet()}
                             size="small"
                             sx={{
                               borderColor: '#10B981',
@@ -1154,15 +1152,6 @@ const Creator = () => {
 
       {/* Add Chain Footer */}
       <AddChainFooter />
-      <Dialog
-        open={showConnectWallet && !primaryWallet}
-        onClose={() => {
-          setShowConnectWallet(false);
-        }}
-        maxWidth="sm"
-      >
-        <DynamicEmbeddedWidget background="default" style={{ width: 350 }} />
-      </Dialog>
     </Box>
   );
 };

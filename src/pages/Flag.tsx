@@ -11,11 +11,11 @@ import {
   getReport,
   AgentReport,
 } from '../services/db/leaderboard.service';
-import {
-  useDynamicContext,
-  useSocialAccounts,
-} from '@dynamic-labs/sdk-react-core';
-import { ProviderEnum } from '@dynamic-labs/sdk-api-core';
+// import {
+//   useDynamicContext,
+//   useSocialAccounts,
+// } from '@dynamic-labs/sdk-react-core';
+// import { ProviderEnum } from '@dynamic-labs/sdk-api-core';
 import { Toaster, toast } from 'react-hot-toast';
 import AgenticReportComp from '../components/AgenticReportComp';
 // import TwitterPost from '../components/TwitterPost';
@@ -86,8 +86,8 @@ const themes: Record<string, LocalTheme> = {
 };
 
 const Flag = () => {
-  const { error, isProcessing, signInWithSocialAccount } = useSocialAccounts();
-  const { user } = useDynamicContext();
+  // const { error, isProcessing, signInWithSocialAccount } = useSocialAccounts();
+  // const { user } = useDynamicContext();
 
   //   const [reportInfo, setReportInfo] = useState<AgentReport | null>(null);
   const [projectId, setProjectId] = useState<string>('');
@@ -134,10 +134,10 @@ const Flag = () => {
       return;
     }
     if (!voterUsername) {
-      //   Trigger Login
-      return await signInWithSocialAccount(ProviderEnum.Twitter, {
-        redirectUrl: window.location.href,
-      });
+      // //   Trigger Login
+      // return await signInWithSocialAccount(ProviderEnum.Twitter, {
+      //   redirectUrl: window.location.href,
+      // });
     }
     if (flagUserId === voterUserId) {
       toast.error('Cannot flag yourself');
@@ -179,15 +179,15 @@ const Flag = () => {
     }
   };
 
-  useEffect(() => {
-    if (user) {
-      const twitterCredential = user.verifiedCredentials.find(
-        (cred) => cred.oauthProvider === 'twitter'
-      );
-      setVoterUsername(twitterCredential?.oauthUsername || '');
-      setVoterUserId(twitterCredential?.oauthAccountId || '');
-    }
-  }, [user]);
+  // useEffect(() => {
+  //   if (user) {
+  //     const twitterCredential = user.verifiedCredentials.find(
+  //       (cred) => cred.oauthProvider === 'twitter'
+  //     );
+  //     setVoterUsername(twitterCredential?.oauthUsername || '');
+  //     setVoterUserId(twitterCredential?.oauthAccountId || '');
+  //   }
+  // }, [user]);
 
   const fetchProject = async (projectId: string) => {
     const lbProject = await getLeaderboardProject(projectId);
@@ -208,7 +208,8 @@ const Flag = () => {
     setFlagUserId(id);
     fetchProject(projectId || 'evaonlinexyz');
     fetchSlash(projectId || 'evaonlinexyz', id);
-  }, [user]);
+  }, []);
+  // }, [user]);
 
   const fetchReport = async (id: string) => {
     const report = await getReport(id);
