@@ -341,7 +341,7 @@ const Creator = () => {
     // await removeSessionSigners(primaryWallet);
     // await logout();
     // primaryWallet.disconnect();
-    alert('Disconnect directly in the Wallet');
+    alert('Disconnect directly through the Wallet app/extension');
   };
 
   return (
