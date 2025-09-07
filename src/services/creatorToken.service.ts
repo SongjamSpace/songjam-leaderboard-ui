@@ -1,8 +1,9 @@
 import { ethers } from 'ethers';
-import { getWeb3Provider, getSigner } from '@dynamic-labs/ethers-v6';
+// import { getWeb3Provider, getSigner } from '@dynamic-labs/ethers-v6';
 
 // SongjamToken contract ABI and bytecode
 import SongjamTokenArtifact from './SongjamToken.json';
+import { ConnectedWallet } from '@privy-io/react-auth';
 
 export interface CreatorTokenInfo {
   name: string;
@@ -24,6 +25,7 @@ export const L1_CHAIN_CONFIG = {
   chainId: 46976, // Base mainnet chain ID
   name: 'Songjam Genesis',
   blockExplorerUrl: 'https://explorer-test.avax.network/songjam',
+  tokenName: 'Songjam',
   symbol: 'SANG',
 };
 
@@ -34,25 +36,25 @@ const CREATOR_TOKEN_FACTORY_ADDRESS =
 /**
  * Switch to the L1 chain
  */
-const switchToL1Chain = async (): Promise<void> => {
-  try {
-    if (typeof window === 'undefined' || !window.ethereum) {
-      throw new Error('No wallet found');
-    }
+// const switchToL1Chain = async (): Promise<void> => {
+//   try {
+//     if (typeof window === 'undefined' || !window.ethereum) {
+//       throw new Error('No wallet found');
+//     }
 
-    await window.ethereum.request({
-      method: 'wallet_switchEthereumChain',
-      params: [{ chainId: `0x${L1_CHAIN_CONFIG.chainId.toString(16)}` }],
-    });
-  } catch (error: any) {
-    // If the chain is not added, add it
-    if (error.code === 4902) {
-      await addL1Chain();
-    } else {
-      throw error;
-    }
-  }
-};
+//     await window.ethereum.request({
+//       method: 'wallet_switchEthereumChain',
+//       params: [{ chainId: `0x${L1_CHAIN_CONFIG.chainId.toString(16)}` }],
+//     });
+//   } catch (error: any) {
+//     // If the chain is not added, add it
+//     if (error.code === 4902) {
+//       await addL1Chain();
+//     } else {
+//       throw error;
+//     }
+//   }
+// };
 
 /**
  * Add the L1 chain to the wallet
@@ -63,7 +65,7 @@ export const addL1Chain = async (): Promise<void> => {
       throw new Error('No wallet found');
     }
 
-    await window.ethereum.request({
+    await (window.ethereum as any).request({
       method: 'wallet_addEthereumChain',
       params: [
         {
@@ -85,11 +87,18 @@ export const addL1Chain = async (): Promise<void> => {
   }
 };
 
+const getSigner = async (wallet: ConnectedWallet) => {
+  const provider = await wallet.getEthereumProvider();
+  const ethersProvider = new ethers.BrowserProvider(provider);
+  const signer = await ethersProvider.getSigner();
+  return signer;
+};
+
 /**
  * Deploy a new Creator Token
  */
 export const deployCreatorToken = async (
-  primaryWallet: any,
+  primaryWallet: ConnectedWallet,
   receiverAddress: string,
   tokenInfo: CreatorTokenInfo
 ): Promise<MintResult> => {
@@ -167,25 +176,21 @@ export const mintTokens = async (
 };
 
 export const fetchTokenBalance = async (
-  primaryWallet: any,
   walletAddress: string,
   contractAddress: string,
   isNative: boolean
 ) => {
   try {
-    const provider = await getWeb3Provider(primaryWallet);
+    const ethersProvider = new ethers.JsonRpcProvider(L1_CHAIN_CONFIG.rpcUrl);
     let balance: bigint;
     if (isNative) {
       // Get native token balance instead of ERC20
-      balance = await provider.getBalance(walletAddress);
-      //   const balance = await provider.getBalance(
-      //     '0x07C920eA4A1aa50c8bE40c910d7c4981D135272B'
-      //   );
+      balance = await ethersProvider.getBalance(walletAddress);
     } else {
       const contract = new ethers.Contract(
         contractAddress,
         SongjamTokenArtifact.abi,
-        provider
+        ethersProvider
       );
       balance = await contract.balanceOf(walletAddress);
     }
@@ -224,7 +229,7 @@ export const addCustomTokenToWallet = async (
     } else {
       // Fallback to window.ethereum if connector provider is not available
       if (typeof window !== 'undefined' && window.ethereum) {
-        await window.ethereum.request({
+        await (window.ethereum as any).request({
           method: 'wallet_watchAsset',
           params: {
             type: 'ERC20',

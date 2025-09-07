@@ -19,11 +19,6 @@ import {
   AgentReport,
   submitTweet,
 } from '../services/db/leaderboard.service';
-import {
-  useDynamicContext,
-  useSocialAccounts,
-} from '@dynamic-labs/sdk-react-core';
-import { ProviderEnum } from '@dynamic-labs/sdk-api-core';
 import { Toaster, toast } from 'react-hot-toast';
 import AgenticReportComp from '../components/AgenticReportComp';
 // import TwitterPost from '../components/TwitterPost';
@@ -33,6 +28,13 @@ import {
   LeaderboardProject,
 } from '../services/db/leaderboardProjects.service';
 import TwitterPost from '../components/TwitterPost';
+import {
+  onAuthStateChanged,
+  signInWithPopup,
+  TwitterAuthProvider,
+  User,
+} from 'firebase/auth';
+import { auth } from '../services/firebase.service';
 
 export type LocalTheme = {
   bgcolor: string;
@@ -94,8 +96,9 @@ const themes: Record<string, LocalTheme> = {
 };
 
 const Review = () => {
-  const { error, isProcessing, signInWithSocialAccount } = useSocialAccounts();
-  const { user } = useDynamicContext();
+  //   const { error, isProcessing, signInWithSocialAccount } = useSocialAccounts();
+  //   const { user } = useDynamicContext();
+  const [twitterUser, setTwitterUser] = useState<User | null>(null);
 
   //   const [reportInfo, setReportInfo] = useState<AgentReport | null>(null);
   const [projectId, setProjectId] = useState<string>('');
@@ -140,15 +143,23 @@ const Review = () => {
     }
   };
 
+  const handleTwitterSignIn = async () => {
+    try {
+      const provider = new TwitterAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error('Twitter sign-in error:', error);
+      toast.error('Failed to sign in with Twitter');
+    }
+  };
+
   const handleVote = async (vote: 'defend' | 'slash') => {
     if (loading || isButtonDisabled) {
       return;
     }
     if (!reviewerUsername) {
       //   Trigger Login
-      return await signInWithSocialAccount(ProviderEnum.Twitter, {
-        redirectUrl: window.location.href,
-      });
+      return handleTwitterSignIn();
     }
     if (reviewUserId === reviewerUserId) {
       toast.error('Cannot review yourself');
@@ -194,14 +205,14 @@ const Review = () => {
   };
 
   useEffect(() => {
-    if (user) {
-      const twitterCredential = user.verifiedCredentials.find(
-        (cred) => cred.oauthProvider === 'twitter'
-      );
-      setReviewerUsername(twitterCredential?.oauthUsername || '');
-      setReviewerUserId(twitterCredential?.oauthAccountId || '');
+    if (twitterUser) {
+      //   const twitterCredential = user.verifiedCredentials.find(
+      //     (cred) => cred.oauthProvider === 'twitter'
+      //   );
+      setReviewerUsername((twitterUser as any).reloadUserInfo?.screenName);
+      setReviewerUserId(twitterUser.uid);
     }
-  }, [user]);
+  }, [twitterUser]);
 
   const fetchProject = async (projectId: string) => {
     const lbProject = await getLeaderboardProject(projectId);
@@ -280,7 +291,7 @@ const Review = () => {
     setReviewUserId(id);
     fetchProject(projectId || 'evaonlinexyz');
     fetchSlash(projectId || 'evaonlinexyz', id);
-  }, [user]);
+  }, [twitterUser]);
 
   const fetchReport = async (id: string) => {
     const report = await getReport(id);
@@ -289,6 +300,23 @@ const Review = () => {
     }
     setReportInfo(report);
   };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      //   setIsLoading(false);
+      if (
+        user?.providerData.length &&
+        user.providerData.find((p) => p.providerId === 'twitter.com')
+      ) {
+        setTwitterUser(user);
+      } else {
+        // Automatically initiate sign in with X if no user is signed in
+        handleTwitterSignIn();
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return (
     <Box
@@ -403,7 +431,7 @@ const Review = () => {
                     },
                     transition: 'all 0.2s',
                   }}
-                  onClick={() => handleVote('slash')}
+                  onClick={async () => await handleVote('slash')}
                 >
                   Submit for Review
                 </Button>

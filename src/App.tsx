@@ -13,10 +13,10 @@ import {
 } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import {
-  DynamicEmbeddedWidget,
-  useDynamicContext,
-} from '@dynamic-labs/sdk-react-core';
+// import {
+//   DynamicEmbeddedWidget,
+//   useDynamicContext,
+// } from '@dynamic-labs/sdk-react-core';
 import {
   getElytraStakingStatus,
   ElytraStakingInfo,
@@ -30,6 +30,7 @@ import {
   User,
 } from 'firebase/auth';
 import { auth } from './services/firebase.service';
+import { useWallets } from '@privy-io/react-auth';
 
 interface AppProps {
   onChangeLoginView: (value: 'twitter' | 'web3') => void;
@@ -41,7 +42,9 @@ export default function App({ onChangeLoginView }: AppProps) {
     null
   );
   const [isCheckingStake, setIsCheckingStake] = useState(false);
-  const { primaryWallet } = useDynamicContext();
+  // const { primaryWallet } = useDynamicContext();
+  const { wallets } = useWallets();
+  const [primaryWallet] = wallets;
   const [twitterUser, setTwitterUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -402,9 +405,6 @@ export default function App({ onChangeLoginView }: AppProps) {
       </Container>
 
       <Toaster position="bottom-center" />
-      <Dialog open={!primaryWallet} onClose={() => {}} maxWidth="sm">
-        <DynamicEmbeddedWidget background="default" style={{ width: 350 }} />
-      </Dialog>
     </Box>
   );
 }

@@ -12,10 +12,6 @@ import {
 import { useSearchParams } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import {
-  DynamicEmbeddedWidget,
-  useDynamicContext,
-} from '@dynamic-labs/sdk-react-core';
-import {
   getElytraStakingStatus,
   ElytraStakingInfo,
 } from '../services/elytra.service';
@@ -32,6 +28,8 @@ import {
   User,
 } from 'firebase/auth';
 import { auth } from '../services/firebase.service';
+import { useConnectWallet, useWallets } from '@privy-io/react-auth';
+import { base } from 'viem/chains';
 
 export default function Elytra() {
   const [searchParams] = useSearchParams();
@@ -39,12 +37,14 @@ export default function Elytra() {
     null
   );
   const [isCheckingStake, setIsCheckingStake] = useState(false);
-  const { primaryWallet } = useDynamicContext();
+  const { wallets } = useWallets();
+  const [primaryWallet] = wallets;
   const [twitterUser, setTwitterUser] = useState<User | null>(null);
   const [alreadyWhitelisted, setAlreadyWhitelisted] = useState(false);
   const [addingToWhitelist, setAddingToWhitelist] = useState(false);
   const [whitelistedUser, setWhitelistedUser] =
     useState<ElytraStakerDoc | null>(null);
+  const { connectWallet } = useConnectWallet();
 
   const checkIfAlreadyWhitelisted = async (walletAddress: string) => {
     const whitelistedUser = await checkIfWhitelisted(walletAddress);
@@ -85,7 +85,14 @@ export default function Elytra() {
   };
   // // Check staking status when wallet is connected
   useEffect(() => {
-    checkStaking();
+    if (primaryWallet) {
+      if (primaryWallet.chainId !== 'eip155:8453') {
+        primaryWallet.switchChain(8453);
+      }
+      checkStaking();
+    } else {
+      connectWallet();
+    }
   }, [primaryWallet]);
 
   useEffect(() => {
@@ -463,9 +470,6 @@ export default function Elytra() {
       </Container>
 
       <Toaster position="bottom-center" />
-      <Dialog open={!primaryWallet} onClose={() => {}} maxWidth="sm">
-        <DynamicEmbeddedWidget background="default" style={{ width: 350 }} />
-      </Dialog>
     </Box>
   );
 }
