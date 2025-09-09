@@ -42,12 +42,7 @@ import {
 } from '../services/creatorToken.service';
 import axios from 'axios';
 import AddChainFooter from '../components/AddChainFooter';
-import {
-  useConnectWallet,
-  useWallets,
-  useLogout,
-  useSessionSigners,
-} from '@privy-io/react-auth';
+import { useConnectWallet, useWallets } from '@privy-io/react-auth';
 
 const glowAnimation = keyframes`
   0% { box-shadow: 0 0 5px rgba(139, 92, 246, 0.5); }
@@ -75,7 +70,6 @@ const Creator = () => {
   //   const { primaryWallet, network, handleLogOut } = useDynamicContext();
   const { wallets } = useWallets();
   const [primaryWallet] = wallets;
-  const { logout } = useLogout();
 
   const [showConnectWallet, setShowConnectWallet] = useState(false);
   const [isBalanceFetched, setIsBalanceFetched] = useState(false);
@@ -83,7 +77,6 @@ const Creator = () => {
     useState('');
 
   const { connectWallet } = useConnectWallet();
-  const { removeSessionSigners } = useSessionSigners();
 
   const fetchWalletForAirdrop = async (twitterId: string) => {
     try {
@@ -816,7 +809,7 @@ const Creator = () => {
                             fontSize: { xs: '0.7rem', sm: '0.8rem' },
                             wordBreak: 'break-all',
                           }}
-                          href={`https://explorer-test.avax.network/songjam/address/${walletForAirdrop.creatorContractAddress}`}
+                          href={`https://explorer-test.avax.network/songjam/token/${walletForAirdrop.creatorContractAddress}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           component="a"
