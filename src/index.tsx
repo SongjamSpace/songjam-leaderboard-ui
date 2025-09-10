@@ -18,6 +18,7 @@ import { L1_CHAIN_CONFIG } from './services/creatorToken.service';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { defineChain } from 'viem';
 import { base } from 'viem/chains';
+import Swap from './pages/Swap';
 
 WebFont.load({
   google: {
@@ -85,6 +86,8 @@ function Web3Wrapper() {
           <Route path="/elytra" element={<Elytra />} />
           {/* <Route path="/evaonlinexyz" element={<EvaOnlineXyz />} /> */}
           <Route path="/wachai" element={<WachAi />} />
+          <Route path="/swap" element={<Swap />} />
+          <Route path="/swap/:address" element={<Swap />} />
           <Route path="/flag" element={<Review />} />
           <Route path="/review" element={<Review />} />
           <Route path="/hyperliquidx" element={<HyperLiquid />} />
