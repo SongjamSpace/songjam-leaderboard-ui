@@ -75,3 +75,41 @@ export const updateCreatorTokenInfo = async (
     mintedTimestampMs: Date.now(),
   });
 };
+
+export const getCreatorTokenInfo = async (userId: string) => {
+  const claimTokensRef = doc(db, 'sang_airdrop_wallets', userId);
+  const claimTokens = await getDoc(claimTokensRef);
+  return claimTokens.data();
+};
+
+type V2AirdropSubmission = {
+  twitterId: string;
+  mintedCreaterTokenAddress: string;
+  mintedCreaterTokenSymbol: string;
+  mintedCreaterTokenName: string;
+  stakeBalance: string;
+  stakedWalletAddress: string;
+
+  airdropWalletAddress: string;
+};
+
+export const createV2AirdropSubmissionDoc = async (
+  twitterId: string,
+  v2AirdropSubmission: V2AirdropSubmission
+) => {
+  const docRef = doc(db, 'v2_airdrop_submissions', twitterId);
+  await setDoc(docRef, {
+    ...v2AirdropSubmission,
+    createdAt: Date.now(),
+    createdDateTime: serverTimestamp(),
+  });
+};
+
+export const getV2SubmissionDoc = async (twitterId: string) => {
+  const docRef = doc(db, 'v2_airdrop_submissions', twitterId);
+  const docSs = await getDoc(docRef);
+  if (docSs.exists()) {
+    return docSs.data() as V2AirdropSubmission;
+  }
+  return null;
+};

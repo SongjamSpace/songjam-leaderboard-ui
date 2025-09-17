@@ -18,6 +18,7 @@ import { L1_CHAIN_CONFIG } from './services/creatorToken.service';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { defineChain } from 'viem';
 import { base } from 'viem/chains';
+import App from './App';
 
 WebFont.load({
   google: {
@@ -81,7 +82,7 @@ function Web3Wrapper() {
       <ThemeProvider theme={theme}>
         {/* <AuthProvider> */}
         <Routes>
-          <Route path="/" element={<ClaimSangTokens />} />
+          <Route path="/" element={<App />} />
           <Route path="/elytra" element={<Elytra />} />
           {/* <Route path="/evaonlinexyz" element={<EvaOnlineXyz />} /> */}
           <Route path="/wachai" element={<WachAi />} />

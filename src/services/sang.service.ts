@@ -1,0 +1,56 @@
+import { ethers } from 'ethers';
+// import { Wallet } from '@dynamic-labs/sdk-react-core';
+
+// ERC20 ABI for balance checking
+const ERC20_ABI = [
+  'function balanceOf(address owner) view returns (uint256)',
+  'function decimals() view returns (uint8)',
+  'function symbol() view returns (string)',
+  'function name() view returns (string)',
+];
+
+// Minimum staked amount required (50k ELYTRA tokens)
+const MIN_STAKED_AMOUNT = ethers.parseUnits('10000', 18); // Assuming 18 decimals
+
+export interface SangStakingInfo {
+  hasMinimumStake: boolean;
+  balance: string;
+  formattedBalance: string;
+  symbol: string;
+  name: string;
+}
+
+export const getSangStakingStatus = async (
+  walletAddress: string
+): Promise<SangStakingInfo> => {
+  const provider = new ethers.AlchemyProvider(
+    8453,
+    import.meta.env.VITE_ALCHEMY_API_KEY
+  );
+  const STACKING_CONTRACT_ADDRESS =
+    '0x852777091af43Af197D977DcCa6aBB54b6B5Eb56';
+  // check if user has a balance of this contract
+  const contract = new ethers.Contract(
+    STACKING_CONTRACT_ADDRESS,
+    ERC20_ABI,
+    provider
+  );
+  const balance = await contract.balanceOf(walletAddress);
+  if (balance > 0) {
+    return {
+      hasMinimumStake: balance >= MIN_STAKED_AMOUNT,
+      balance: balance.toString(),
+      formattedBalance: ethers.formatUnits(balance, 18),
+      symbol: 'SANG',
+      name: 'Songjam',
+    };
+  }
+
+  return {
+    hasMinimumStake: false,
+    balance: '0',
+    formattedBalance: '0',
+    symbol: 'SANG',
+    name: 'Songjam',
+  };
+};

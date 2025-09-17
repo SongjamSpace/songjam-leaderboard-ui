@@ -14,15 +14,15 @@ import {
   where,
 } from 'firebase/firestore';
 
-const SONGJAM_LEADERBOARD_COLLECTION_NAME = 'singPointsLeaderboard_18_06_2025';
+// const SONGJAM_LEADERBOARD_COLLECTION_NAME = 'singPointsLeaderboard_18_06_2025';
 
 const userIdExistsInLeaderboard = async (userId: string, id: 'SANG') => {
-  const docRef = doc(
-    collection(db, SONGJAM_LEADERBOARD_COLLECTION_NAME),
-    userId
+  // return {totalPoints: 12};
+  const lb = await axios.get(
+    'https://songjamspace-leaderboard.logesh-063.workers.dev/songjamspace'
   );
-  const docSnap = await getDoc(docRef);
-  return docSnap.data();
+  const exists = lb.data.find((u: LeaderboardUser) => u.userId === userId);
+  return exists;
 };
 
 export type AgentReport = {

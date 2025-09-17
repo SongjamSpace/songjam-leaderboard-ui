@@ -5,24 +5,22 @@ import {
   Container,
   Typography,
   Paper,
-  Alert,
   Button,
-  Icon,
   LinearProgress,
-  Dialog,
+  TextField,
+  IconButton,
+  Alert,
 } from '@mui/material';
+import { Logout } from '@mui/icons-material';
+import Checklist, { ChecklistItem } from './components/Checklist';
 import { useSearchParams } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 // import {
 //   DynamicEmbeddedWidget,
 //   useDynamicContext,
 // } from '@dynamic-labs/sdk-react-core';
-import {
-  getElytraStakingStatus,
-  ElytraStakingInfo,
-} from './services/elytra.service';
+import { getSangStakingStatus, SangStakingInfo } from './services/sang.service';
 import toast from 'react-hot-toast';
-import { createElytraStakerDoc } from './services/db/elytraStakers.service';
 import {
   signInWithPopup,
   TwitterAuthProvider,
@@ -30,50 +28,140 @@ import {
   User,
 } from 'firebase/auth';
 import { auth } from './services/firebase.service';
-import { useWallets } from '@privy-io/react-auth';
+import { useConnectWallet, useWallets } from '@privy-io/react-auth';
+import { ethers } from 'ethers';
+import { userIdExistsInLeaderboard } from './services/db/leaderboard.service';
+import {
+  createV2AirdropSubmissionDoc,
+  getCreatorTokenInfo,
+  getV2SubmissionDoc,
+} from './services/db/sangClaim.service';
 
 interface AppProps {
   onChangeLoginView: (value: 'twitter' | 'web3') => void;
 }
 
-export default function App({ onChangeLoginView }: AppProps) {
+export default function App() {
   const [searchParams] = useSearchParams();
-  const [stakingInfo, setStakingInfo] = useState<ElytraStakingInfo | null>(
-    null
-  );
+  const [stakingInfo, setStakingInfo] = useState<SangStakingInfo | null>(null);
   const [isCheckingStake, setIsCheckingStake] = useState(false);
   // const { primaryWallet } = useDynamicContext();
+  const { connectWallet } = useConnectWallet();
   const { wallets } = useWallets();
   const [primaryWallet] = wallets;
   const [twitterUser, setTwitterUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [localWalletAddress, setLocalWalletAddress] = useState('');
+  const [lbDataFetched, setLbDataFetched] = useState(false);
+  const [userLbData, setUserLbData] = useState<{
+    totalPoints: number;
+  } | null>(null);
+  const [creatorTokenFetched, setCreatorTokenFetched] = useState(false);
+  const [creatorTokenInfo, setCreatorTokenInfo] = useState<{
+    creatorContractAddress: string;
+    tokenName: string;
+    tokenSymbol: string;
+  } | null>(null);
+  const [stakingInfoFetched, setStakingInfoFetched] = useState(false);
+  const [airdropWalletAddress, setAirdropWalletAddress] = useState('');
+  const [isSubmittingAirdrop, setIsSubmittingAirdrop] = useState(false);
+  const [isAlreadySubmitted, setIsAlreadySubmitted] = useState(false);
+
+  // Checklist items for the airdrop requirements
+  const checklistItems = [
+    {
+      id: 'yapper',
+      title: 'Singer in Songjam Leaderboard',
+      description: 'Creating and sharing on the timeline and in spaces',
+      completed: !!userLbData, // Completed if user is signed in with Twitter
+      failed: lbDataFetched && !userLbData,
+    },
+    {
+      id: 'minted-creator-token',
+      title: 'Minted Creator Token',
+      description: 'Create and mint your own creator token on the platform',
+      completed: !!creatorTokenInfo, // This would need to be implemented based on your logic
+      failed: creatorTokenFetched && !creatorTokenInfo,
+    },
+    {
+      id: 'staked-sang',
+      title: 'Staked 10k SANG',
+      description:
+        'Stake at least 10,000 SANG tokens to qualify for the airdrop',
+      completed: stakingInfoFetched && stakingInfo?.hasMinimumStake,
+      failed: stakingInfoFetched && !stakingInfo?.hasMinimumStake,
+    },
+  ];
+
+  const checkAlreadySubmitted = async (twitterId: string) => {
+    const doc = await getV2SubmissionDoc(twitterId);
+    if (doc) {
+      setIsAlreadySubmitted(true);
+      setLbDataFetched(true);
+      setUserLbData({ totalPoints: 1 });
+      setCreatorTokenFetched(true);
+      setCreatorTokenInfo({
+        creatorContractAddress: doc.mintedCreaterTokenAddress,
+        tokenName: doc.mintedCreaterTokenName,
+        tokenSymbol: doc.mintedCreaterTokenSymbol,
+      });
+      setStakingInfoFetched(true);
+      setStakingInfo({
+        balance: doc.stakeBalance,
+        formattedBalance: doc.stakeBalance,
+        hasMinimumStake: true,
+        symbol: doc.mintedCreaterTokenSymbol,
+        name: doc.mintedCreaterTokenName,
+      });
+      setAirdropWalletAddress(doc.airdropWalletAddress);
+    } else {
+      await checkIfUserIsLeaderboardMember(twitterId);
+    }
+  };
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsLoading(false);
       if (user) {
         setTwitterUser(user);
+        checkAlreadySubmitted(user.providerData[0].uid);
       }
     });
+    return () => unsubscribe();
   }, []);
 
-  // Get the id parameter from URL
-  const idParam = searchParams.get('id');
+  const checkIfUserIsLeaderboardMember = async (userId: string) => {
+    setIsLoading(true);
+    const lbData = await userIdExistsInLeaderboard(userId, 'SANG');
+    setUserLbData(lbData as { totalPoints: number } | null);
+    setLbDataFetched(true);
+    const creatorTokenData = await getCreatorTokenInfo(userId);
+    setCreatorTokenInfo(
+      creatorTokenData as {
+        creatorContractAddress: string;
+        tokenName: string;
+        tokenSymbol: string;
+      } | null
+    );
+    setCreatorTokenFetched(true);
+    setIsLoading(false);
+  };
 
-  // // Check staking status when wallet is connected
+  // Check staking status when wallet is connected
   useEffect(() => {
     const checkStaking = async () => {
       if (primaryWallet?.address && !stakingInfo && !isCheckingStake) {
         setIsCheckingStake(true);
         try {
-          const info = await getElytraStakingStatus(primaryWallet.address); // Base chainId
+          const info = await getSangStakingStatus(primaryWallet.address); // Base chainId
           setStakingInfo(info);
+          setStakingInfoFetched(true);
           setIsCheckingStake(false);
 
           if (info.hasMinimumStake && !twitterUser) {
             // Auto-start X login if they have sufficient tokens
             try {
-              // await signInWithSocialAccount(ProviderEnum.Twitter, {
-              //   redirectUrl: window.location.href,
-              // });
+              await handleTwitterSignIn();
             } catch (error) {
               console.error('Error signing in with Twitter:', error);
               toast.error('Failed to connect X account');
@@ -81,7 +169,7 @@ export default function App({ onChangeLoginView }: AppProps) {
           }
         } catch (error) {
           console.error('Error checking staking status:', error);
-          toast.error('Failed to check ELYTRA staking status');
+          toast.error('Failed to check SANG staking status');
         }
       }
     };
@@ -89,322 +177,374 @@ export default function App({ onChangeLoginView }: AppProps) {
     checkStaking();
   }, [primaryWallet]);
 
-  const renderContent = () => {
-    if (!primaryWallet) {
-      return (
-        <Box sx={{ textAlign: 'center' }}>
-          <LinearProgress />
-          <Typography variant="h6" sx={{ color: 'white', my: 2 }}>
-            Connecting to Base Network...
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
-          >
-            Please approve the connection in your wallet
-          </Typography>
-        </Box>
-      );
+  const handleTwitterSignIn = async () => {
+    try {
+      const provider = new TwitterAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error('Twitter sign-in error:', error);
+      toast.error('Failed to sign in with X');
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await auth.signOut();
+      setTwitterUser(null);
+    } catch (error) {
+      console.error('Sign-out error:', error);
+    }
+  };
+
+  // Check if all requirements are completed without any failures
+  const allRequirementsCompleted =
+    checklistItems.every((item) => item.completed) &&
+    checklistItems.every((item) => !item.failed);
+
+  const handleSubmitAirdrop = async () => {
+    if (!airdropWalletAddress.trim()) {
+      toast.error('Please enter a wallet address');
+      return;
     }
 
-    if (isCheckingStake) {
-      return (
-        <Box sx={{ textAlign: 'center' }}>
-          <LinearProgress />
-          <Typography variant="h6" sx={{ color: 'white', my: 2 }}>
-            Checking staked $ELYTRA tokens...
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
-          >
-            Verifying your token holdings on Base network
-          </Typography>
-        </Box>
-      );
+    if (!ethers.isAddress(airdropWalletAddress)) {
+      toast.error('Please enter a valid wallet address');
+      return;
+    }
+    const twitterId = twitterUser?.providerData[0].uid;
+    if (!twitterId) {
+      toast.error('Please sign in with X again');
+      return;
+    }
+    if (!creatorTokenInfo) {
+      toast.error('Please mint a creator token');
+      return;
+    }
+    if (!stakingInfo) {
+      toast.error('Please stake 10k SANG');
+      return;
     }
 
-    // if (isAuthLoading) {
-    //   return (
-    //     <Box sx={{ textAlign: 'center' }}>
-    //       <LinearProgress />
-    //     </Box>
-    //   );
-    // }
-
-    if (stakingInfo) {
-      if (stakingInfo.hasMinimumStake) {
-        return (
-          <Box sx={{ textAlign: 'center' }}>
-            {!twitterUser && (
-              <Alert severity="success" sx={{ mb: 3, textAlign: 'left' }}>
-                <Typography variant="h6" sx={{ mb: 1 }}>
-                  ✅ Success! You have sufficient $ELYTRA tokens staked
-                </Typography>
-                <Typography variant="body2">
-                  Balance:{' '}
-                  {parseFloat(stakingInfo.formattedBalance).toLocaleString()}{' '}
-                  {stakingInfo.symbol}
-                </Typography>
-              </Alert>
-            )}
-
-            {!twitterUser ? (
-              <Box>
-                <Typography variant="h6" sx={{ color: 'white', mb: 3 }}>
-                  Connect your X account to access the leaderboard
-                </Typography>
-                <Button
-                  variant="contained"
-                  size="large"
-                  onClick={async () => {
-                    // onChangeLoginView('twitter');
-                    // setShowDynamicAuth(true);
-                    try {
-                      const userCreds = await signInWithPopup(
-                        auth,
-                        new TwitterAuthProvider()
-                      );
-                      setTwitterUser(userCreds.user);
-                    } catch (error) {
-                      console.error('Error signing in with Twitter:', error);
-                      toast.error('Failed to connect X account');
-                    }
-                  }}
-                  sx={{
-                    background: 'black',
-                    color: 'white',
-                  }}
-                  endIcon={
-                    <img
-                      src="/logos/twitter.png"
-                      alt="Twitter"
-                      width={14}
-                      height={14}
-                    />
-                  }
-                >
-                  Sign in with
-                </Button>
-              </Box>
-            ) : (
-              <Alert severity="success" sx={{ textAlign: 'left', mb: 3 }}>
-                <Typography variant="h6" sx={{ mb: 1 }}>
-                  Welcome to the ELYTRA Leaderboard!
-                </Typography>
-                <Typography variant="body2">
-                  Your X account @
-                  {(twitterUser as any).reloadUserInfo?.screenName ||
-                    twitterUser.displayName}{' '}
-                  is now connected and you're ready to participate in the
-                  leaderboard.
-                </Typography>
-              </Alert>
-            )}
-
-            {/* {twitterUser && stakingInfo.hasMinimumStake && ( */}
-            <Button
-              variant="contained"
-              size="small"
-              onClick={async () => {
-                if (!primaryWallet?.address || !twitterUser) {
-                  toast.error('Failed to create staker document');
-                  return;
-                }
-                // TODO: Implement leaderboard join logic
-                const isExists = await createElytraStakerDoc(
-                  primaryWallet.address,
-                  twitterUser.uid,
-                  (twitterUser as any).reloadUserInfo?.screenName,
-                  twitterUser.displayName
-                );
-                if (isExists) {
-                  toast.error('Already whitelisted');
-                } else {
-                  toast.success('Welcome to the ELYTRA Leaderboard!');
-                }
-                window.close();
-              }}
-              // sx={{
-              //   background: 'linear-gradient(135deg, #10b981, #059669)',
-              //   py: 2,
-              //   px: 4,
-              //   borderRadius: 2,
-              //   fontSize: '1.1rem',
-              //   fontWeight: 600,
-              //   '&:hover': {
-              //     background: 'linear-gradient(135deg, #059669, #047857)',
-              //   },
-              // }}
-              startIcon={
-                <Box
-                  component="svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" />
-                </Box>
-              }
-            >
-              Join Leaderboard
-            </Button>
-            {/* )} */}
-          </Box>
-        );
-      } else {
-        return (
-          <Box sx={{ textAlign: 'center' }}>
-            <Alert severity="warning" sx={{ mb: 3, textAlign: 'left' }}>
-              <Typography variant="h6" sx={{ mb: 1 }}>
-                Insufficient Stake Balance
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 2 }}>
-                Current balance:{' '}
-                {parseFloat(stakingInfo.formattedBalance).toLocaleString()} $
-                {stakingInfo.symbol}
-              </Typography>
-              <Typography variant="body2">
-                You need at least 50,000 ${stakingInfo.symbol} staked to feature
-                in the Leaderboard.
-              </Typography>
-            </Alert>
-
-            <Button
-              variant="contained"
-              size="small"
-              href="https://app.virtuals.io/virtuals/28867"
-              target="_blank"
-              // sx={{
-              //   background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-              //   py: 1.5,
-              //   px: 4,
-              //   borderRadius: 2,
-              //   '&:hover': {
-              //     background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
-              //   },
-              // }}
-            >
-              Stake ELYTRA Tokens
-            </Button>
-          </Box>
-        );
-      }
+    setIsSubmittingAirdrop(true);
+    try {
+      await createV2AirdropSubmissionDoc(twitterId, {
+        twitterId,
+        mintedCreaterTokenAddress: creatorTokenInfo.creatorContractAddress,
+        mintedCreaterTokenSymbol: creatorTokenInfo.tokenSymbol,
+        mintedCreaterTokenName: creatorTokenInfo.tokenName,
+        stakeBalance: stakingInfo.balance,
+        stakedWalletAddress: primaryWallet?.address,
+        airdropWalletAddress: airdropWalletAddress,
+      });
+      toast.success('Airdrop submission successful!');
+      await checkAlreadySubmitted(twitterId);
+      setAirdropWalletAddress('');
+    } catch (error) {
+      console.error('Error submitting airdrop:', error);
+      toast.error('Failed to submit airdrop');
+    } finally {
+      setIsSubmittingAirdrop(false);
     }
-
-    return null;
   };
 
   return (
     <Box
       sx={{
         minHeight: '100vh',
-        background:
-          'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
+        background: `linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)`,
+        position: 'relative',
         py: 4,
+        overflow: 'hidden',
+        '&:before': {
+          content: '""',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: 0,
+          backgroundImage: 'url(/logos/songjam_logo.png)',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+          backgroundSize: 'cover',
+          opacity: 0.07,
+          pointerEvents: 'none',
+        },
       }}
     >
-      <Container maxWidth="md">
-        {/* ELYTRA Header */}
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Typography
-            variant="h2"
-            sx={{
-              // background: 'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
-              color: 'white',
-              // WebkitBackgroundClip: 'text',
-              // WebkitTextFillColor: 'transparent',
-              fontWeight: 'bold',
-              mb: 2,
-              fontSize: { xs: '2.5rem', md: '3.5rem' },
-              borderColor: 'hsl(265 82% 80%)',
-              textShadow:
-                '0 0 5px hsl(265, 82%, 75%, 0.7), 0 0 10px hsl(265, 82%, 60%, 0.5), 0 0 15px hsl(265, 82%, 50%, 0.3)',
-            }}
-          >
-            $ELYTRA
-          </Typography>
-          <Typography
-            variant="h5"
-            sx={{
-              color: 'rgba(255, 255, 255, 0.8)',
-              mb: 1,
-              fontWeight: 300,
-            }}
-          >
-            Leaderboard Access
-          </Typography>
-          {idParam && (
-            <Typography
-              variant="body1"
-              sx={{
-                color: 'rgba(255, 255, 255, 0.6)',
-                maxWidth: 600,
-                mx: 'auto',
-              }}
-            >
-              Welcome! We're verifying your ELYTRA token holdings to grant you
-              access to the leaderboard.
-            </Typography>
-          )}
-        </Box>
-
-        {/* Main Content */}
-        <Paper
-          elevation={3}
+      <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1 }}>
+        {/* Main Title and X Login Section */}
+        <Box
           sx={{
-            p: 2,
-            background:
-              'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95))',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(96, 165, 250, 0.2)',
-            borderRadius: 1,
-            maxWidth: 600,
-            mx: 'auto',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            mb: 6,
+            flexWrap: 'wrap',
           }}
         >
-          {renderContent()}
-        </Paper>
-        <Box display={'flex'} justifyContent={'center'} mt={2}>
+          {/* Main Title */}
           <Typography
-            variant="caption"
+            variant="h3"
             sx={{
-              textAlign: 'center',
-              width: '100%',
-              display: 'block',
-              color: '#b0b0b0',
-              fontFamily: 'Chakra Petch, sans-serif',
+              background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              fontWeight: 'bold',
+              textShadow: '0 0 20px rgba(236, 72, 153, 0.3)',
+              flex: 1,
+              minWidth: '300px',
             }}
           >
-            Powered by{' '}
-            <a
-              href="https://songjam.space/"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                fontWeight: 'bold',
-                textDecoration: 'none',
-                color: '#ff007a',
-              }}
-              onMouseOver={(e) =>
-                (e.currentTarget.style.textDecoration = 'underline')
-              }
-              onMouseOut={(e) =>
-                (e.currentTarget.style.textDecoration = 'none')
-              }
-            >
-              Songjam
-            </a>
+            Songjam Genesis Airdrop
           </Typography>
-        </Box>
-      </Container>
 
-      <Toaster position="bottom-center" />
+          {/* X Login Section */}
+          <Paper
+            sx={{
+              p: 2,
+              background: 'transparent',
+              borderRadius: '15px',
+            }}
+          >
+            {twitterUser ? (
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 2,
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    color: '#8B5CF6',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {twitterUser?.displayName}
+                </Typography>
+                <IconButton
+                  onClick={handleSignOut}
+                  sx={{
+                    color: '#8B5CF6',
+                  }}
+                  size="small"
+                >
+                  <Logout />
+                </IconButton>
+              </Box>
+            ) : (
+              <Button
+                disabled={isLoading}
+                variant="contained"
+                size="medium"
+                onClick={handleTwitterSignIn}
+                sx={{
+                  background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
+                  color: 'white',
+                  px: 3,
+                  py: 1.5,
+                  borderRadius: '25px',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  fontSize: '1rem',
+                  boxShadow: '0 4px 15px rgba(139, 92, 246, 0.3)',
+                  '&:hover': {
+                    background: 'linear-gradient(45deg, #7c3aed, #db2777)',
+                    boxShadow: '0 6px 20px rgba(139, 92, 246, 0.4)',
+                  },
+                }}
+              >
+                Sign in with X
+              </Button>
+            )}
+          </Paper>
+        </Box>
+
+        {/* Genesis Airdrop Space Banner */}
+        {/* <Box>
+          <Alert
+            severity="info"
+            sx={{
+              cursor: 'pointer',
+              '&:hover': {
+                opacity: 0.9,
+              },
+            }}
+            onClick={() =>
+              window.open('https://x.com/i/spaces/1yNGabDLNnqJj', '_blank')
+            }
+          >
+            🎙️ Attend live Genesis Airdrop Space to become eligible for the
+            airdrop
+          </Alert>
+        </Box> */}
+
+        {/* Requirements Checklist */}
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            my: 4,
+          }}
+        >
+          <Checklist
+            items={checklistItems as ChecklistItem[]}
+            title="Airdrop Requirements"
+            showProgress={true}
+            walletAddres={primaryWallet?.address}
+            onConnectWallet={connectWallet}
+            onDisconnectWallet={() => {
+              primaryWallet.disconnect();
+              alert('Disconnect directly from the Wallet');
+            }}
+          />
+        </Box>
+
+        {/* Submit Airdrop Section */}
+        {allRequirementsCompleted && (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              my: 4,
+            }}
+          >
+            <Paper
+              sx={{
+                p: 4,
+                background: 'rgba(0, 0, 0, 0.3)',
+                borderRadius: '15px',
+                border: '1px solid #8B5CF6',
+                backdropFilter: 'blur(10px)',
+                width: '100%',
+                maxWidth: 600,
+              }}
+            >
+              <Typography
+                variant="h5"
+                sx={{
+                  color: 'white',
+                  fontWeight: 'bold',
+                  mb: 2,
+                  textAlign: 'center',
+                  background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
+                🎉 Submit Airdrop Wallet Address
+              </Typography>
+
+              <Typography
+                variant="body1"
+                sx={{
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  mb: 3,
+                  textAlign: 'center',
+                  lineHeight: 1.6,
+                }}
+              >
+                <Box component="span" sx={{}}>
+                  Congratulations! Enter your wallet address and{' '}
+                  <a
+                    href="https://x.com/i/spaces/1yNGabDLNnqJj"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      textDecoration: 'underline',
+                      cursor: 'pointer',
+                      background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      // The color will be transparent due to parent span's WebkitTextFillColor
+                      // so it will also have the gradient.
+                    }}
+                  >
+                    attend our space
+                  </a>{' '}
+                  this friday to receive your airdrop tokens.
+                </Box>
+              </Typography>
+
+              <Box sx={{ mb: 3 }}>
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  placeholder="Enter your wallet address (0x...)"
+                  value={airdropWalletAddress}
+                  onChange={(e) => setAirdropWalletAddress(e.target.value)}
+                  disabled={isSubmittingAirdrop || isAlreadySubmitted}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: '10px',
+                      '& fieldset': {
+                        borderColor: 'rgba(139, 92, 246, 0.3)',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: 'rgba(139, 92, 246, 0.5)',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#8B5CF6',
+                      },
+                    },
+                    '& .MuiInputBase-input': {
+                      color: 'white',
+                      '&::placeholder': {
+                        color: 'rgba(255, 255, 255, 0.6)',
+                        opacity: 1,
+                      },
+                    },
+                  }}
+                />
+              </Box>
+
+              <Button
+                fullWidth
+                variant="contained"
+                size="large"
+                onClick={handleSubmitAirdrop}
+                disabled={
+                  isSubmittingAirdrop ||
+                  !airdropWalletAddress.trim() ||
+                  isAlreadySubmitted
+                }
+                sx={{
+                  background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
+                  color: 'white',
+                  py: 2,
+                  borderRadius: '25px',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  fontSize: '1.1rem',
+                  boxShadow: '0 4px 15px rgba(139, 92, 246, 0.3)',
+                  '&:hover': {
+                    background: 'linear-gradient(45deg, #7c3aed, #db2777)',
+                    boxShadow: '0 6px 20px rgba(139, 92, 246, 0.4)',
+                  },
+                  '&:disabled': {
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    color: 'rgba(255, 255, 255, 0.3)',
+                    boxShadow: 'none',
+                  },
+                }}
+              >
+                {isSubmittingAirdrop
+                  ? 'Submitting...'
+                  : isAlreadySubmitted
+                  ? 'Submitted Successfully'
+                  : 'Submit Airdrop'}
+              </Button>
+            </Paper>
+          </Box>
+        )}
+
+        {isLoading && <LinearProgress />}
+        <Toaster position="bottom-center" />
+      </Container>
     </Box>
   );
 }
