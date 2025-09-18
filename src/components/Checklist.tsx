@@ -14,6 +14,7 @@ import {
   IconButton,
   Stack,
   useMediaQuery,
+  Alert,
 } from '@mui/material';
 import {
   CheckCircle,
@@ -21,6 +22,7 @@ import {
   Error,
   Schedule,
   Logout,
+  Launch,
 } from '@mui/icons-material';
 
 export interface ChecklistItem {
@@ -323,6 +325,27 @@ const Checklist: React.FC<ChecklistProps> = ({
           </ListItem>
         ))}
       </List>
+      {/* Genesis Airdrop Space Banner */}
+      <Box>
+        <Alert
+          severity="info"
+          sx={{
+            cursor: 'pointer',
+            '&:hover': {
+              opacity: 0.9,
+            },
+          }}
+          onClick={() =>
+            window.open('https://x.com/i/spaces/1yNGabDLNnqJj', '_blank')
+          }
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            🎙️ Attend "Songjam Genesis Airdrop: Episode One" Space to qualify
+            for the airdrop
+            <Launch fontSize="small" sx={{ ml: 0.5 }} />
+          </Box>
+        </Alert>
+      </Box>
     </Paper>
   );
 };

@@ -362,26 +362,6 @@ export default function App() {
             )}
           </Paper>
         </Box>
-
-        {/* Genesis Airdrop Space Banner */}
-        {/* <Box>
-          <Alert
-            severity="info"
-            sx={{
-              cursor: 'pointer',
-              '&:hover': {
-                opacity: 0.9,
-              },
-            }}
-            onClick={() =>
-              window.open('https://x.com/i/spaces/1yNGabDLNnqJj', '_blank')
-            }
-          >
-            🎙️ Attend live Genesis Airdrop Space to become eligible for the
-            airdrop
-          </Alert>
-        </Box> */}
-
         {/* Requirements Checklist */}
         <Box
           sx={{
