@@ -12,6 +12,8 @@ import {
   LinearProgress,
   Button,
   IconButton,
+  Stack,
+  useMediaQuery,
 } from '@mui/material';
 import {
   CheckCircle,
@@ -49,6 +51,7 @@ const Checklist: React.FC<ChecklistProps> = ({
   const completedCount = items.filter((item) => item.completed).length;
   const totalCount = items.length;
   const progressPercentage = (completedCount / totalCount) * 100;
+  const isSmallerScreen = useMediaQuery('(max-width: 600px)');
 
   return (
     <Paper
@@ -221,6 +224,7 @@ const Checklist: React.FC<ChecklistProps> = ({
                     />
                   </Box>
                   {index === 2 &&
+                    !isSmallerScreen &&
                     (walletAddres ? (
                       <Box
                         sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
@@ -259,19 +263,61 @@ const Checklist: React.FC<ChecklistProps> = ({
                 </Box>
               }
               secondary={
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: item.completed
-                      ? 'rgba(255, 255, 255, 0.6)'
-                      : item.failed
-                      ? 'rgba(255, 255, 255, 0.7)'
-                      : 'rgba(255, 255, 255, 0.8)',
-                    lineHeight: 1.4,
-                  }}
-                >
-                  {item.description}
-                </Typography>
+                <Stack gap={2}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: item.completed
+                        ? 'rgba(255, 255, 255, 0.6)'
+                        : item.failed
+                        ? 'rgba(255, 255, 255, 0.7)'
+                        : 'rgba(255, 255, 255, 0.8)',
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {item.description}
+                  </Typography>
+                  {index === 2 &&
+                    isSmallerScreen &&
+                    (walletAddres ? (
+                      <Box>
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: '#8B5CF6',
+                              fontWeight: 'bold',
+                              fontFamily: 'monospace',
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                            }}
+                          >
+                            {walletAddres.slice(0, 6)}...
+                            {walletAddres.slice(-4)}
+                          </Typography>
+                          <IconButton
+                            onClick={onDisconnectWallet}
+                            sx={{
+                              color: '#8B5CF6',
+                            }}
+                            size="small"
+                          >
+                            <Logout fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      </Box>
+                    ) : (
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={onConnectWallet}
+                      >
+                        Connect Wallet
+                      </Button>
+                    ))}
+                </Stack>
               }
             />
           </ListItem>
