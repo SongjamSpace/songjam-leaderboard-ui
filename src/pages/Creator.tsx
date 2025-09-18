@@ -774,6 +774,34 @@ const Creator = () => {
                               fontSize: { xs: '0.75rem', sm: '0.875rem' },
                             }}
                           >
+                            Setup Swap
+                          </Button>
+                          <Button
+                            variant="text"
+                            size="small"
+                            onClick={() => {
+                              if (
+                                walletForAirdrop.creatorContractAddress &&
+                                walletForAirdrop.tokenName &&
+                                walletForAirdrop.tokenSymbol
+                              ) {
+                                addCustomTokenToWallet(
+                                  primaryWallet,
+                                  walletForAirdrop.creatorContractAddress,
+                                  {
+                                    decimals: 18,
+                                    name: walletForAirdrop.tokenName,
+                                    symbol: walletForAirdrop.tokenSymbol,
+                                    contractAddress:
+                                      walletForAirdrop.creatorContractAddress,
+                                  }
+                                );
+                              }
+                            }}
+                            sx={{
+                              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                            }}
+                          >
                             Add to Wallet
                           </Button>
                         </Box>
