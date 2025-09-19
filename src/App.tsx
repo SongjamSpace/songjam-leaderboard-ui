@@ -80,8 +80,8 @@ export default function App() {
       id: 'minted-creator-token',
       title: 'Minted Creator Token',
       description: 'Create and mint your own creator token on the platform',
-      completed: !!creatorTokenInfo, // This would need to be implemented based on your logic
-      failed: creatorTokenFetched && !creatorTokenInfo,
+      completed: !!creatorTokenInfo?.creatorContractAddress, // This would need to be implemented based on your logic
+      failed: creatorTokenFetched && !creatorTokenInfo?.creatorContractAddress,
     },
     {
       id: 'staked-sang',
@@ -216,7 +216,7 @@ export default function App() {
       toast.error('Please sign in with X again');
       return;
     }
-    if (!creatorTokenInfo) {
+    if (!creatorTokenInfo?.creatorContractAddress) {
       toast.error('Please mint a creator token');
       return;
     }
