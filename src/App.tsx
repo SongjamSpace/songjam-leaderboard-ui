@@ -10,6 +10,10 @@ import {
   TextField,
   IconButton,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import { Logout } from '@mui/icons-material';
 import Checklist, { ChecklistItem } from './components/Checklist';
@@ -119,16 +123,16 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setIsLoading(false);
-      if (user) {
-        setTwitterUser(user);
-        checkAlreadySubmitted(user.providerData[0].uid);
-      }
-    });
-    return () => unsubscribe();
-  }, []);
+  // useEffect(() => {
+  //   const unsubscribe = onAuthStateChanged(auth, (user) => {
+  //     setIsLoading(false);
+  //     if (user) {
+  //       setTwitterUser(user);
+  //       // checkAlreadySubmitted(user.providerData[0].uid);
+  //     }
+  //   });
+  //   return () => unsubscribe();
+  // }, []);
 
   const checkIfUserIsLeaderboardMember = async (userId: string) => {
     setIsLoading(true);
@@ -174,7 +178,7 @@ export default function App() {
       }
     };
 
-    checkStaking();
+    // checkStaking();
   }, [primaryWallet]);
 
   const handleTwitterSignIn = async () => {
@@ -523,9 +527,68 @@ export default function App() {
           </Box>
         )}
 
-        {isLoading && <LinearProgress />}
+        {/* {isLoading && <LinearProgress />} */}
         <Toaster position="bottom-center" />
       </Container>
+
+      {/* Airdrop Window Closed Modal */}
+      <Dialog
+        open
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            background: 'rgba(30, 41, 59, 0.95)',
+            backdropFilter: 'blur(120px)',
+            borderRadius: '24px',
+            border: '1px solid rgba(139, 92, 246, 0.3)',
+            boxShadow: '0 24px 48px rgba(0, 0, 0, 0.3)',
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            textAlign: 'center',
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: '1.5rem',
+            background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            py: 3,
+          }}
+        >
+          ⏰ Airdrop Submission Closed
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            textAlign: 'center',
+            px: 4,
+            py: 2,
+          }}
+        >
+          <Typography
+            variant="body1"
+            sx={{
+              color: 'rgba(255, 255, 255, 0.8)',
+              lineHeight: 1.6,
+              mb: 2,
+            }}
+          >
+            The airdrop submission window has closed. No new submissions are
+            being accepted for the airdrop
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'rgba(255, 255, 255, 0.6)',
+              fontStyle: 'italic',
+            }}
+          >
+            Thank you for your interest in the Songjam Genesis Airdrop!
+          </Typography>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }
