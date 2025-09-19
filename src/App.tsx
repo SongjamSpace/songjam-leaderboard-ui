@@ -229,12 +229,13 @@ export default function App() {
     try {
       await createV2AirdropSubmissionDoc(twitterId, {
         twitterId,
-        mintedCreaterTokenAddress: creatorTokenInfo.creatorContractAddress,
-        mintedCreaterTokenSymbol: creatorTokenInfo.tokenSymbol,
-        mintedCreaterTokenName: creatorTokenInfo.tokenName,
-        stakeBalance: stakingInfo.balance,
-        stakedWalletAddress: primaryWallet?.address,
-        airdropWalletAddress: airdropWalletAddress,
+        mintedCreaterTokenAddress:
+          creatorTokenInfo.creatorContractAddress || '',
+        mintedCreaterTokenSymbol: creatorTokenInfo.tokenSymbol || '',
+        mintedCreaterTokenName: creatorTokenInfo.tokenName || '',
+        stakeBalance: stakingInfo.balance || '',
+        stakedWalletAddress: primaryWallet?.address || '',
+        airdropWalletAddress,
       });
       toast.success('Airdrop submission successful!');
       await checkAlreadySubmitted(twitterId);
