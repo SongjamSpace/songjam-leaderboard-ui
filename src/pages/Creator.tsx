@@ -15,6 +15,7 @@ import {
   keyframes,
   Dialog,
   Divider,
+  Chip,
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import {
@@ -462,206 +463,9 @@ const Creator = () => {
 
         {/* Main Content */}
         {twitterUser ? (
-          <Grid container spacing={{ xs: 2, md: 4 }}>
-            {/* Mobile: Show mint tokens section first when creator contract exists */}
-            {walletForAirdrop?.creatorContractAddress && (
-              <Grid item xs={12} sx={{ display: { xs: 'block', md: 'none' } }}>
-                <Paper
-                  sx={{
-                    p: { xs: 3, md: 4 },
-                    background: 'rgba(0, 0, 0, 0.3)',
-                    borderRadius: '15px',
-                    border: '1px solid #10B981',
-                    mb: 2,
-                  }}
-                >
-                  {/* Mint tokens section for mobile */}
-                  <Box
-                    display={'flex'}
-                    justifyContent={'space-between'}
-                    alignItems={'center'}
-                    flexDirection={{ xs: 'column', sm: 'row' }}
-                    gap={2}
-                    mb={2}
-                  >
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        color: 'white',
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                        fontSize: { xs: '1.3rem', sm: '1.5rem' },
-                      }}
-                    >
-                      Mint ${walletForAirdrop.tokenSymbol} (
-                      {walletForAirdrop.tokenName})
-                    </Typography>
-
-                    <Box sx={{ textAlign: 'center' }}>
-                      {primaryWallet ? (
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 1,
-                          }}
-                        >
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              fontFamily: 'monospace',
-                              color: '#10B981',
-                              fontWeight: 'bold',
-                              fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                            }}
-                          >
-                            {primaryWallet?.address.slice(0, 6)}...
-                            {primaryWallet?.address.slice(-4)}
-                          </Typography>
-                          <IconButton
-                            onClick={handleLogOut}
-                            size="small"
-                            sx={{
-                              color: '#10B981',
-                              '&:hover': {
-                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                              },
-                            }}
-                          >
-                            <LogoutIcon fontSize="small" />
-                          </IconButton>
-                        </Box>
-                      ) : (
-                        <Button
-                          variant="outlined"
-                          onClick={() => connectWallet()}
-                          size="small"
-                          sx={{
-                            borderColor: '#10B981',
-                            color: '#10B981',
-                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                            '&:hover': {
-                              borderColor: '#059669',
-                              backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            },
-                          }}
-                        >
-                          Connect Wallet
-                        </Button>
-                      )}
-                    </Box>
-                  </Box>
-
-                  <Stack spacing={2}>
-                    <TextField
-                      fullWidth
-                      label="Receiver Address"
-                      variant="outlined"
-                      type="text"
-                      value={creatorTokenAirdropReceiver}
-                      onChange={(e) =>
-                        setCreatorTokenAirdropReceiver(e.target.value)
-                      }
-                      placeholder="0x"
-                      disabled={isMintingTokens}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          fontFamily: 'Chakra Petch, sans-serif',
-                          '& fieldset': {
-                            borderColor: '#10B981',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: '#10B981',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#10B981',
-                          },
-                        },
-                        '& .MuiInputLabel-root': {
-                          color: '#fff',
-                          '&.Mui-focused': {
-                            color: '#10B981',
-                          },
-                        },
-                        '& .MuiInputBase-input': {
-                          color: '#fff',
-                        },
-                      }}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Amount to Mint"
-                      variant="outlined"
-                      type="number"
-                      value={mintAmount}
-                      onChange={(e) => setMintAmount(e.target.value)}
-                      placeholder="e.g., 1000"
-                      disabled={isMintingTokens}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          fontFamily: 'Chakra Petch, sans-serif',
-                          '& fieldset': {
-                            borderColor: '#10B981',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: '#10B981',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#10B981',
-                          },
-                        },
-                        '& .MuiInputLabel-root': {
-                          color: '#fff',
-                          '&.Mui-focused': {
-                            color: '#10B981',
-                          },
-                        },
-                        '& .MuiInputBase-input': {
-                          color: '#fff',
-                        },
-                      }}
-                    />
-
-                    <Button
-                      variant="contained"
-                      size="large"
-                      disabled={
-                        isMintingTokens ||
-                        !mintAmount.trim() ||
-                        isNaN(Number(mintAmount))
-                      }
-                      onClick={handleMintTokens}
-                      sx={{
-                        background: 'linear-gradient(45deg, #10B981, #059669)',
-                        color: 'white',
-                        px: 3,
-                        py: 1.5,
-                        borderRadius: '25px',
-                        fontWeight: 'bold',
-                        textTransform: 'none',
-                        fontSize: { xs: '0.9rem', sm: '1rem' },
-                        boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)',
-                        '&:hover': {
-                          background:
-                            'linear-gradient(45deg, #059669, #047857)',
-                          boxShadow: '0 6px 20px rgba(16, 185, 129, 0.4)',
-                        },
-                        '&:disabled': {
-                          background: 'rgba(16, 185, 129, 0.3)',
-                          color: 'rgba(255, 255, 255, 0.5)',
-                        },
-                      }}
-                    >
-                      {isMintingTokens ? 'Minting...' : 'Mint Tokens'}
-                    </Button>
-                  </Stack>
-                </Paper>
-              </Grid>
-            )}
-
-            {/* Left Column - Wallet & Balance */}
-            <Grid item xs={12} md={6}>
+          <Grid container spacing={{ xs: 2, md: 4 }} mb={20}>
+            {/* Main Column - Wallet & Balance & Mint Tokens */}
+            <Grid item xs={12}>
               <Paper
                 sx={{
                   p: { xs: 3, md: 4 },
@@ -739,16 +543,45 @@ const Creator = () => {
                           justifyContent={'space-between'}
                           gap={{ xs: 1, sm: 0 }}
                         >
-                          <Typography
-                            variant="body1"
-                            sx={{
-                              color: 'rgba(255, 255, 255, 0.7)',
-                              fontSize: { xs: '0.9rem', sm: '1rem' },
-                            }}
+                          <Box
+                            display={'flex'}
+                            alignItems={'center'}
+                            gap={{ xs: 2 }}
+                            py={2}
+                            flexWrap={'wrap'}
                           >
-                            Creator Token Info
-                          </Typography>
-                          <Button
+                            <Typography
+                              variant="body1"
+                              sx={{
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                fontSize: { xs: '0.9rem', sm: '1rem' },
+                              }}
+                            >
+                              Creator Token Info
+                            </Typography>
+                            <Chip
+                              label="Creator Token is Succesfully Minted"
+                              sx={{
+                                background:
+                                  'linear-gradient(135deg, #60a5fa, #8b5cf6, #ec4899)',
+                                color: '#ffffff',
+                                border: 'none',
+                                fontWeight: 600,
+                                backdropFilter: 'blur(8px)',
+                                boxShadow: '0 4px 12px rgba(96, 165, 250, 0.3)',
+                                '& .MuiChip-label': {
+                                  fontSize: '0.875rem',
+                                  fontWeight: 600,
+                                },
+                                '&:hover': {
+                                  transform: 'translateY(-1px)',
+                                  boxShadow:
+                                    '0 6px 16px rgba(96, 165, 250, 0.4)',
+                                },
+                              }}
+                            />
+                          </Box>
+                          {/* <Button
                             variant="text"
                             size="small"
                             onClick={() => {
@@ -775,8 +608,8 @@ const Creator = () => {
                             }}
                           >
                             Setup Swap
-                          </Button>
-                          <Button
+                          </Button> */}
+                          {/* <Button
                             variant="text"
                             size="small"
                             onClick={() => {
@@ -803,7 +636,7 @@ const Creator = () => {
                             }}
                           >
                             Add to Wallet
-                          </Button>
+                          </Button> */}
                         </Box>
                         <Divider />
                         <Typography
@@ -859,6 +692,435 @@ const Creator = () => {
                         )}
                       </>
                     )}
+
+                    {/* Mint Tokens Section - Compact */}
+                    {walletForAirdrop?.creatorContractAddress && (
+                      <Box sx={{ mt: 2 }}>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            color: 'white',
+                            fontWeight: 'bold',
+                            mb: 2,
+                            fontSize: { xs: '1rem', sm: '1.1rem' },
+                          }}
+                        >
+                          ${walletForAirdrop.tokenSymbol} Faucet
+                        </Typography>
+
+                        <Stack spacing={2}>
+                          {/* Receiver Address */}
+                          <TextField
+                            label="Receiver Address"
+                            variant="outlined"
+                            size="small"
+                            value={creatorTokenAirdropReceiver}
+                            onChange={(e) =>
+                              setCreatorTokenAirdropReceiver(e.target.value)
+                            }
+                            placeholder="0x..."
+                            disabled={isMintingTokens}
+                            sx={{
+                              width: '350px',
+                              '& .MuiOutlinedInput-root': {
+                                fontFamily: 'Chakra Petch, sans-serif',
+                                '& fieldset': {
+                                  borderColor: '#10B981',
+                                },
+                                '&:hover fieldset': {
+                                  borderColor: '#10B981',
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: '#10B981',
+                                },
+                              },
+                              '& .MuiInputLabel-root': {
+                                color: '#fff',
+                                fontSize: '0.875rem',
+                                '&.Mui-focused': {
+                                  color: '#10B981',
+                                },
+                              },
+                              '& .MuiInputBase-input': {
+                                color: '#fff',
+                                fontSize: '0.875rem',
+                              },
+                            }}
+                          />
+
+                          {/* Amount */}
+                          <TextField
+                            label="Amount"
+                            variant="outlined"
+                            size="small"
+                            type="number"
+                            value={mintAmount}
+                            onChange={(e) => setMintAmount(e.target.value)}
+                            placeholder="1000"
+                            disabled={isMintingTokens}
+                            sx={{
+                              width: '350px',
+                              '& .MuiOutlinedInput-root': {
+                                fontFamily: 'Chakra Petch, sans-serif',
+                                '& fieldset': {
+                                  borderColor: '#10B981',
+                                },
+                                '&:hover fieldset': {
+                                  borderColor: '#10B981',
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: '#10B981',
+                                },
+                              },
+                              '& .MuiInputLabel-root': {
+                                color: '#fff',
+                                fontSize: '0.875rem',
+                                '&.Mui-focused': {
+                                  color: '#10B981',
+                                },
+                              },
+                              '& .MuiInputBase-input': {
+                                color: '#fff',
+                                fontSize: '0.875rem',
+                              },
+                            }}
+                          />
+
+                          {/* Mint button and wallet controls */}
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              gap: 2,
+                              alignItems: 'center',
+                            }}
+                          >
+                            <Button
+                              variant="contained"
+                              size="small"
+                              disabled={
+                                isMintingTokens ||
+                                !mintAmount.trim() ||
+                                isNaN(Number(mintAmount))
+                              }
+                              onClick={handleMintTokens}
+                              sx={{
+                                background:
+                                  'linear-gradient(45deg, #10B981, #059669)',
+                                color: 'white',
+                                px: 3,
+                                py: 1,
+                                borderRadius: '15px',
+                                fontWeight: 'bold',
+                                textTransform: 'none',
+                                fontSize: '0.875rem',
+                                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
+                                '&:hover': {
+                                  background:
+                                    'linear-gradient(45deg, #059669, #047857)',
+                                  boxShadow:
+                                    '0 4px 12px rgba(16, 185, 129, 0.4)',
+                                },
+                                '&:disabled': {
+                                  background: 'rgba(16, 185, 129, 0.3)',
+                                  color: 'rgba(255, 255, 255, 0.5)',
+                                },
+                              }}
+                            >
+                              {isMintingTokens ? 'Minting...' : 'Mint Tokens'}
+                            </Button>
+
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
+                              }}
+                            >
+                              {primaryWallet ? (
+                                <>
+                                  <Typography
+                                    variant="body2"
+                                    sx={{
+                                      fontFamily: 'monospace',
+                                      color: '#10B981',
+                                      fontWeight: 'bold',
+                                      fontSize: '0.75rem',
+                                    }}
+                                  >
+                                    {primaryWallet?.address.slice(0, 6)}...
+                                    {primaryWallet?.address.slice(-4)}
+                                  </Typography>
+                                  <IconButton
+                                    onClick={handleLogOut}
+                                    size="small"
+                                    sx={{
+                                      color: '#10B981',
+                                      '&:hover': {
+                                        backgroundColor:
+                                          'rgba(16, 185, 129, 0.1)',
+                                      },
+                                    }}
+                                  >
+                                    <LogoutIcon fontSize="small" />
+                                  </IconButton>
+                                </>
+                              ) : (
+                                <Button
+                                  variant="outlined"
+                                  onClick={() => connectWallet()}
+                                  size="small"
+                                  sx={{
+                                    borderColor: '#10B981',
+                                    color: '#10B981',
+                                    fontSize: '0.75rem',
+                                    px: 2,
+                                    '&:hover': {
+                                      borderColor: '#059669',
+                                      backgroundColor:
+                                        'rgba(16, 185, 129, 0.1)',
+                                    },
+                                  }}
+                                >
+                                  Connect Wallet
+                                </Button>
+                              )}
+                            </Box>
+                          </Box>
+                        </Stack>
+                      </Box>
+                    )}
+
+                    {/* Create Your Creator Token Section */}
+                    {walletForAirdrop &&
+                      !walletForAirdrop?.creatorContractAddress && (
+                        <Box sx={{ mt: 4 }}>
+                          <Divider sx={{ mb: 3, borderColor: '#10B981' }} />
+                          <Box
+                            display={'flex'}
+                            justifyContent={'space-between'}
+                            alignItems={'center'}
+                            flexDirection={{ xs: 'column', sm: 'row' }}
+                            gap={{ xs: 2, sm: 0 }}
+                            mb={{ xs: 2, md: 3 }}
+                          >
+                            <Typography
+                              variant="h5"
+                              sx={{
+                                color: 'white',
+                                fontWeight: 'bold',
+                                textAlign: 'center',
+                                fontSize: {
+                                  xs: '1.3rem',
+                                  sm: '1.5rem',
+                                  md: '1.75rem',
+                                },
+                              }}
+                            >
+                              Create Your Creator Token
+                            </Typography>
+                            <Box sx={{ textAlign: 'center' }}>
+                              {primaryWallet ? (
+                                <Box
+                                  sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: { xs: 1, sm: 2 },
+                                  }}
+                                >
+                                  <Typography
+                                    variant="body2"
+                                    sx={{
+                                      fontFamily: 'monospace',
+                                      color: '#10B981',
+                                      fontWeight: 'bold',
+                                      fontSize: {
+                                        xs: '0.75rem',
+                                        sm: '0.875rem',
+                                      },
+                                    }}
+                                  >
+                                    {primaryWallet?.address.slice(0, 6)}...
+                                    {primaryWallet?.address.slice(-4)}
+                                  </Typography>
+                                  <IconButton
+                                    onClick={handleLogOut}
+                                    size="small"
+                                    sx={{
+                                      color: '#10B981',
+                                      '&:hover': {
+                                        backgroundColor:
+                                          'rgba(16, 185, 129, 0.1)',
+                                      },
+                                    }}
+                                  >
+                                    <LogoutIcon fontSize="small" />
+                                  </IconButton>
+                                </Box>
+                              ) : (
+                                <Button
+                                  variant="outlined"
+                                  onClick={() => setShowConnectWallet(true)}
+                                  size="small"
+                                  sx={{
+                                    borderColor: '#10B981',
+                                    color: '#10B981',
+                                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                                    '&:hover': {
+                                      borderColor: '#059669',
+                                      backgroundColor:
+                                        'rgba(16, 185, 129, 0.1)',
+                                    },
+                                  }}
+                                >
+                                  Connect Wallet
+                                </Button>
+                              )}
+                            </Box>
+                          </Box>
+
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              color: 'rgba(255, 255, 255, 0.8)',
+                              mb: { xs: 2, md: 3 },
+                              textAlign: 'center',
+                              fontSize: { xs: '0.9rem', sm: '1rem' },
+                            }}
+                          >
+                            Mint your own ERC20 token on our L1 chain to
+                            represent your brand
+                          </Typography>
+                          <Stack spacing={{ xs: 2, md: 3 }}>
+                            <TextField
+                              fullWidth
+                              label="Token Name"
+                              variant="outlined"
+                              value={creatorTokenName}
+                              onChange={(e) =>
+                                setCreatorTokenName(e.target.value)
+                              }
+                              placeholder="e.g., My Creator Token"
+                              disabled={isMinting || !walletForAirdrop}
+                              sx={{
+                                '& .MuiOutlinedInput-root': {
+                                  fontFamily: 'Chakra Petch, sans-serif',
+                                  '& fieldset': {
+                                    borderColor: '#10B981',
+                                  },
+                                  '&:hover fieldset': {
+                                    borderColor: '#10B981',
+                                  },
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#10B981',
+                                  },
+                                },
+                                '& .MuiInputLabel-root': {
+                                  color: '#fff',
+                                  fontSize: { xs: '0.9rem', sm: '1rem' },
+                                  '&.Mui-focused': {
+                                    color: '#10B981',
+                                  },
+                                },
+                                '& .MuiInputBase-input': {
+                                  color: '#fff',
+                                  fontSize: { xs: '0.9rem', sm: '1rem' },
+                                },
+                              }}
+                            />
+
+                            <TextField
+                              fullWidth
+                              label="Token Symbol"
+                              variant="outlined"
+                              value={creatorTokenSymbol}
+                              onChange={(e) =>
+                                setCreatorTokenSymbol(
+                                  e.target.value.toUpperCase()
+                                )
+                              }
+                              placeholder="e.g., MCT"
+                              disabled={isMinting || !walletForAirdrop}
+                              sx={{
+                                '& .MuiOutlinedInput-root': {
+                                  fontFamily: 'Chakra Petch, sans-serif',
+                                  '& fieldset': {
+                                    borderColor: '#10B981',
+                                  },
+                                  '&:hover fieldset': {
+                                    borderColor: '#10B981',
+                                  },
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#10B981',
+                                  },
+                                },
+                                '& .MuiInputLabel-root': {
+                                  color: '#fff',
+                                  fontSize: { xs: '0.9rem', sm: '1rem' },
+                                  '&.Mui-focused': {
+                                    color: '#10B981',
+                                  },
+                                },
+                                '& .MuiInputBase-input': {
+                                  color: '#fff',
+                                  fontSize: { xs: '0.9rem', sm: '1rem' },
+                                },
+                              }}
+                            />
+
+                            <Button
+                              variant="contained"
+                              size="large"
+                              disabled={
+                                isMinting ||
+                                !isLbUser ||
+                                !creatorTokenName.trim() ||
+                                !creatorTokenSymbol.trim() ||
+                                !walletForAirdrop
+                              }
+                              onClick={handleMintCreatorToken}
+                              sx={{
+                                background:
+                                  'linear-gradient(45deg, #10B981, #059669)',
+                                color: 'white',
+                                px: { xs: 3, md: 4 },
+                                py: { xs: 1.5, md: 2 },
+                                borderRadius: '25px',
+                                fontWeight: 'bold',
+                                textTransform: 'none',
+                                fontSize: {
+                                  xs: '0.9rem',
+                                  sm: '1rem',
+                                  md: '1.1rem',
+                                },
+                                boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)',
+                                '&:hover': {
+                                  background:
+                                    'linear-gradient(45deg, #059669, #047857)',
+                                  boxShadow:
+                                    '0 6px 20px rgba(16, 185, 129, 0.4)',
+                                },
+                                '&:disabled': {
+                                  background: 'rgba(16, 185, 129, 0.3)',
+                                  color: 'rgba(255, 255, 255, 0.5)',
+                                },
+                              }}
+                            >
+                              {isMinting
+                                ? 'Minting...'
+                                : 'Deploy Creator Token'}
+                            </Button>
+                          </Stack>
+
+                          <Alert severity="info" sx={{ mt: 3 }}>
+                            <Typography variant="body2">
+                              Your creator token will be deployed on our L1
+                              chain and can be used for community engagement,
+                              rewards, and governance.
+                            </Typography>
+                          </Alert>
+                        </Box>
+                      )}
                   </Box>
                 ) : (
                   <Box>
@@ -943,423 +1205,6 @@ const Creator = () => {
                       )}
                     </Stack>
                   </Box>
-                )}
-              </Paper>
-            </Grid>
-
-            {/* Right Column - Creator Token */}
-            <Grid item xs={12} md={6}>
-              <Paper
-                sx={{
-                  p: { xs: 3, md: 4 },
-                  background: 'rgba(0, 0, 0, 0.3)',
-                  borderRadius: '15px',
-                  border: '1px solid #10B981',
-                  display: { xs: 'none', md: 'block' },
-                }}
-              >
-                {walletForAirdrop?.creatorContractAddress ? (
-                  // Show mint tokens section if creator contract exists (hidden on mobile)
-                  <Box>
-                    <Box
-                      display={'flex'}
-                      justifyContent={'space-between'}
-                      alignItems={'center'}
-                    >
-                      <Typography
-                        variant="h5"
-                        sx={{
-                          color: 'white',
-                          mb: 1,
-                          fontWeight: 'bold',
-                          textAlign: 'center',
-                        }}
-                      >
-                        Mint ${walletForAirdrop.tokenSymbol} (
-                        {walletForAirdrop.tokenName})
-                      </Typography>
-
-                      <Box sx={{ mb: 3, textAlign: 'center' }}>
-                        {primaryWallet ? (
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: 2,
-                            }}
-                          >
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                fontFamily: 'monospace',
-                                color: '#10B981',
-                                fontWeight: 'bold',
-                              }}
-                            >
-                              {primaryWallet?.address.slice(0, 6)}...
-                              {primaryWallet?.address.slice(-4)}
-                            </Typography>
-                            <IconButton
-                              onClick={handleLogOut}
-                              size="small"
-                              sx={{
-                                color: '#10B981',
-                                '&:hover': {
-                                  backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                                },
-                              }}
-                            >
-                              <LogoutIcon fontSize="small" />
-                            </IconButton>
-                          </Box>
-                        ) : (
-                          <Button
-                            variant="outlined"
-                            onClick={() => connectWallet()}
-                            size="small"
-                            sx={{
-                              borderColor: '#10B981',
-                              color: '#10B981',
-                              '&:hover': {
-                                borderColor: '#059669',
-                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                              },
-                            }}
-                          >
-                            Connect Wallet
-                          </Button>
-                        )}
-                      </Box>
-                    </Box>
-
-                    <Stack spacing={3}>
-                      <TextField
-                        fullWidth
-                        label="Receiver Address"
-                        variant="outlined"
-                        type="text"
-                        value={creatorTokenAirdropReceiver}
-                        onChange={(e) =>
-                          setCreatorTokenAirdropReceiver(e.target.value)
-                        }
-                        placeholder="0x"
-                        disabled={isMintingTokens}
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            fontFamily: 'Chakra Petch, sans-serif',
-                            '& fieldset': {
-                              borderColor: '#10B981',
-                            },
-                            '&:hover fieldset': {
-                              borderColor: '#10B981',
-                            },
-                            '&.Mui-focused fieldset': {
-                              borderColor: '#10B981',
-                            },
-                          },
-                          '& .MuiInputLabel-root': {
-                            color: '#fff',
-                            '&.Mui-focused': {
-                              color: '#10B981',
-                            },
-                          },
-                          '& .MuiInputBase-input': {
-                            color: '#fff',
-                          },
-                        }}
-                      />
-                      <TextField
-                        fullWidth
-                        label="Amount to Mint"
-                        variant="outlined"
-                        type="number"
-                        value={mintAmount}
-                        onChange={(e) => setMintAmount(e.target.value)}
-                        placeholder="e.g., 1000"
-                        disabled={isMintingTokens}
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            fontFamily: 'Chakra Petch, sans-serif',
-                            '& fieldset': {
-                              borderColor: '#10B981',
-                            },
-                            '&:hover fieldset': {
-                              borderColor: '#10B981',
-                            },
-                            '&.Mui-focused fieldset': {
-                              borderColor: '#10B981',
-                            },
-                          },
-                          '& .MuiInputLabel-root': {
-                            color: '#fff',
-                            '&.Mui-focused': {
-                              color: '#10B981',
-                            },
-                          },
-                          '& .MuiInputBase-input': {
-                            color: '#fff',
-                          },
-                        }}
-                      />
-
-                      <Button
-                        variant="contained"
-                        size="large"
-                        disabled={
-                          isMintingTokens ||
-                          !mintAmount.trim() ||
-                          isNaN(Number(mintAmount))
-                        }
-                        onClick={handleMintTokens}
-                        sx={{
-                          background:
-                            'linear-gradient(45deg, #10B981, #059669)',
-                          color: 'white',
-                          px: 4,
-                          py: 2,
-                          borderRadius: '25px',
-                          fontWeight: 'bold',
-                          textTransform: 'none',
-                          fontSize: '1.1rem',
-                          boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)',
-                          '&:hover': {
-                            background:
-                              'linear-gradient(45deg, #059669, #047857)',
-                            boxShadow: '0 6px 20px rgba(16, 185, 129, 0.4)',
-                          },
-                          '&:disabled': {
-                            background: 'rgba(16, 185, 129, 0.3)',
-                            color: 'rgba(255, 255, 255, 0.5)',
-                          },
-                        }}
-                      >
-                        {isMintingTokens ? 'Minting...' : 'Mint Tokens'}
-                      </Button>
-                    </Stack>
-                  </Box>
-                ) : (
-                  // Show create token section if no creator contract exists
-                  <>
-                    <Box
-                      display={'flex'}
-                      justifyContent={'space-between'}
-                      alignItems={'center'}
-                      flexDirection={{ xs: 'column', sm: 'row' }}
-                      gap={{ xs: 2, sm: 0 }}
-                      mb={{ xs: 2, md: 3 }}
-                    >
-                      <Typography
-                        variant="h5"
-                        sx={{
-                          color: 'white',
-                          fontWeight: 'bold',
-                          textAlign: 'center',
-                          fontSize: {
-                            xs: '1.3rem',
-                            sm: '1.5rem',
-                            md: '1.75rem',
-                          },
-                        }}
-                      >
-                        Create Your Creator Token
-                      </Typography>
-                      <Box sx={{ textAlign: 'center' }}>
-                        {primaryWallet ? (
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: { xs: 1, sm: 2 },
-                            }}
-                          >
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                fontFamily: 'monospace',
-                                color: '#10B981',
-                                fontWeight: 'bold',
-                                fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                              }}
-                            >
-                              {primaryWallet?.address.slice(0, 6)}...
-                              {primaryWallet?.address.slice(-4)}
-                            </Typography>
-                            <IconButton
-                              onClick={handleLogOut}
-                              size="small"
-                              sx={{
-                                color: '#10B981',
-                                '&:hover': {
-                                  backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                                },
-                              }}
-                            >
-                              <LogoutIcon fontSize="small" />
-                            </IconButton>
-                          </Box>
-                        ) : (
-                          <Button
-                            variant="outlined"
-                            onClick={() => setShowConnectWallet(true)}
-                            size="small"
-                            sx={{
-                              borderColor: '#10B981',
-                              color: '#10B981',
-                              fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                              '&:hover': {
-                                borderColor: '#059669',
-                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                              },
-                            }}
-                          >
-                            Connect Wallet
-                          </Button>
-                        )}
-                      </Box>
-                    </Box>
-
-                    {!walletForAirdrop && (
-                      <Alert severity="warning" sx={{ mb: 3 }}>
-                        <Typography variant="body2">
-                          You need to submit your wallet address to access
-                          creator token features. This address will hold your
-                          tokens and receive future airdrops.
-                        </Typography>
-                      </Alert>
-                    )}
-
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        color: 'rgba(255, 255, 255, 0.8)',
-                        mb: { xs: 2, md: 3 },
-                        textAlign: 'center',
-                        fontSize: { xs: '0.9rem', sm: '1rem' },
-                      }}
-                    >
-                      Mint your own ERC20 token on our L1 chain to represent
-                      your brand
-                    </Typography>
-                    <Stack spacing={{ xs: 2, md: 3 }}>
-                      <TextField
-                        fullWidth
-                        label="Token Name"
-                        variant="outlined"
-                        value={creatorTokenName}
-                        onChange={(e) => setCreatorTokenName(e.target.value)}
-                        placeholder="e.g., My Creator Token"
-                        disabled={isMinting || !walletForAirdrop}
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            fontFamily: 'Chakra Petch, sans-serif',
-                            '& fieldset': {
-                              borderColor: '#10B981',
-                            },
-                            '&:hover fieldset': {
-                              borderColor: '#10B981',
-                            },
-                            '&.Mui-focused fieldset': {
-                              borderColor: '#10B981',
-                            },
-                          },
-                          '& .MuiInputLabel-root': {
-                            color: '#fff',
-                            fontSize: { xs: '0.9rem', sm: '1rem' },
-                            '&.Mui-focused': {
-                              color: '#10B981',
-                            },
-                          },
-                          '& .MuiInputBase-input': {
-                            color: '#fff',
-                            fontSize: { xs: '0.9rem', sm: '1rem' },
-                          },
-                        }}
-                      />
-
-                      <TextField
-                        fullWidth
-                        label="Token Symbol"
-                        variant="outlined"
-                        value={creatorTokenSymbol}
-                        onChange={(e) =>
-                          setCreatorTokenSymbol(e.target.value.toUpperCase())
-                        }
-                        placeholder="e.g., MCT"
-                        disabled={isMinting || !walletForAirdrop}
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            fontFamily: 'Chakra Petch, sans-serif',
-                            '& fieldset': {
-                              borderColor: '#10B981',
-                            },
-                            '&:hover fieldset': {
-                              borderColor: '#10B981',
-                            },
-                            '&.Mui-focused fieldset': {
-                              borderColor: '#10B981',
-                            },
-                          },
-                          '& .MuiInputLabel-root': {
-                            color: '#fff',
-                            fontSize: { xs: '0.9rem', sm: '1rem' },
-                            '&.Mui-focused': {
-                              color: '#10B981',
-                            },
-                          },
-                          '& .MuiInputBase-input': {
-                            color: '#fff',
-                            fontSize: { xs: '0.9rem', sm: '1rem' },
-                          },
-                        }}
-                      />
-
-                      <Button
-                        variant="contained"
-                        size="large"
-                        disabled={
-                          isMinting ||
-                          !isLbUser ||
-                          !creatorTokenName.trim() ||
-                          !creatorTokenSymbol.trim() ||
-                          !walletForAirdrop
-                        }
-                        onClick={handleMintCreatorToken}
-                        sx={{
-                          background:
-                            'linear-gradient(45deg, #10B981, #059669)',
-                          color: 'white',
-                          px: { xs: 3, md: 4 },
-                          py: { xs: 1.5, md: 2 },
-                          borderRadius: '25px',
-                          fontWeight: 'bold',
-                          textTransform: 'none',
-                          fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
-                          boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)',
-                          '&:hover': {
-                            background:
-                              'linear-gradient(45deg, #059669, #047857)',
-                            boxShadow: '0 6px 20px rgba(16, 185, 129, 0.4)',
-                          },
-                          '&:disabled': {
-                            background: 'rgba(16, 185, 129, 0.3)',
-                            color: 'rgba(255, 255, 255, 0.5)',
-                          },
-                        }}
-                      >
-                        {isMinting ? 'Minting...' : 'Mint Creator Token'}
-                      </Button>
-                    </Stack>
-
-                    <Alert severity="info" sx={{ mt: 3 }}>
-                      <Typography variant="body2">
-                        Your creator token will be deployed on our L1 chain and
-                        can be used for community engagement, rewards, and
-                        governance.
-                      </Typography>
-                    </Alert>
-                  </>
                 )}
               </Paper>
             </Grid>
