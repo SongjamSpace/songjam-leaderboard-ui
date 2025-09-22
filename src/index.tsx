@@ -19,6 +19,7 @@ import { PrivyProvider } from '@privy-io/react-auth';
 import { defineChain } from 'viem';
 import { base } from 'viem/chains';
 import App from './App';
+import Submit from './pages/Submit';
 
 WebFont.load({
   google: {
@@ -90,6 +91,7 @@ function Web3Wrapper() {
           <Route path="/review" element={<Review />} />
           <Route path="/hyperliquidx" element={<HyperLiquid />} />
           <Route path="/creator" element={<Creator />} />
+          <Route path="/submit" element={<Submit />} />
         </Routes>
         {/* </AuthProvider> */}
       </ThemeProvider>

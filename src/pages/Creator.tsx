@@ -847,8 +847,7 @@ const Creator = () => {
                                       fontSize: '0.75rem',
                                     }}
                                   >
-                                    {primaryWallet?.address.slice(0, 6)}...
-                                    {primaryWallet?.address.slice(-4)}
+                                    {primaryWallet?.address}
                                   </Typography>
                                   <IconButton
                                     onClick={handleLogOut}
