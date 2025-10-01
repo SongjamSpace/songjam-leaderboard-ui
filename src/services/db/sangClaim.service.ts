@@ -113,3 +113,25 @@ export const getV2SubmissionDoc = async (twitterId: string) => {
   }
   return null;
 };
+
+export type TwitterAccountWalletAddress = {
+  twitterId: string;
+  connectedWalletAddress: string;
+  projectId: string;
+};
+
+export const addToTwitterWalletAccounts = async (
+  obj: TwitterAccountWalletAddress
+) => {
+  const docRef = doc(db, 'twitterWalletAccounts', obj.twitterId);
+  await setDoc(docRef, { ...obj, createdAt: Date.now() });
+};
+
+export const getTwitterWalletById = async (twitterId: string) => {
+  const docRef = doc(db, 'twitterWalletAccounts', twitterId);
+  const docSs = await getDoc(docRef);
+  if (docSs.exists()) {
+    return docSs.data() as TwitterAccountWalletAddress;
+  }
+  return null;
+};

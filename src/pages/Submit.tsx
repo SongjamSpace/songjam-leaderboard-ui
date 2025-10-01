@@ -29,7 +29,7 @@ import toast from 'react-hot-toast';
 
 interface UserSubmittedTweet {
   url: string;
-  status: 'NEW';
+  status: 'NEW' | 'ADDED' | 'FAILED';
   tweetId: string;
   username: string;
   name: string;
