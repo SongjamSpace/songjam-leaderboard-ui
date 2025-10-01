@@ -17,6 +17,8 @@ import {
   getTwitterWalletById,
   TwitterAccountWalletAddress,
 } from './services/db/sangClaim.service';
+import { getSangStakingStatus } from './services/sang.service';
+import axios from 'axios';
 
 export default function App() {
   const { connectWallet } = useConnectWallet();
@@ -495,11 +497,29 @@ export default function App() {
                     return;
                   }
                   setIsSubmitting(true);
+                  const stakingInfo = await getSangStakingStatus(
+                    primaryWallet.address
+                  );
+                  if (!stakingInfo?.hasMinimumStake) {
+                    alert('Please stake at least 10,000 SANG tokens');
+                    return;
+                  }
                   await addToTwitterWalletAccounts({
                     twitterId: twitterUser?.uid || '',
                     connectedWalletAddress: primaryWallet.address,
                     projectId: 'adam_songjam',
+                    stakedBalance: stakingInfo.balance,
                   });
+                  try {
+                    await axios.post(
+                      `${
+                        import.meta.env.VITE_JAM_SERVER_URL
+                      }/update-leaderboard`,
+                      {
+                        projectId: 'adam_songjam',
+                      }
+                    );
+                  } catch (e) {}
                   setIsSubmitting(false);
                   toast.success('Wallet submitted successfully');
                 }}
