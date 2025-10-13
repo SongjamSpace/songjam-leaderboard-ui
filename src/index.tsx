@@ -20,6 +20,7 @@ import { defineChain } from 'viem';
 import { base } from 'viem/chains';
 import App from './App';
 import Submit from './pages/Submit';
+import { Stake } from './Stake';
 
 WebFont.load({
   google: {
@@ -84,6 +85,7 @@ function Web3Wrapper() {
         {/* <AuthProvider> */}
         <Routes>
           <Route path="/" element={<App />} />
+          <Route path="/stake" element={<Stake />} />
           <Route path="/elytra" element={<Elytra />} />
           {/* <Route path="/evaonlinexyz" element={<EvaOnlineXyz />} /> */}
           <Route path="/wachai" element={<WachAi />} />

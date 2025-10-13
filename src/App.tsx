@@ -44,14 +44,6 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Auto-trigger Twitter login on mount
-  useEffect(() => {
-    if (!hasAttemptedAutoConnect && !isLoading && !twitterUser) {
-      setHasAttemptedAutoConnect(true);
-      handleTwitterSignIn();
-    }
-  }, [isLoading, twitterUser, hasAttemptedAutoConnect]);
-
   const handleTwitterSignIn = async () => {
     try {
       const provider = new TwitterAuthProvider();
@@ -206,7 +198,7 @@ export default function App() {
                       fontSize: '1rem',
                     }}
                   >
-                    @{twitterUser.displayName}
+                    {twitterUser.displayName}
                   </Typography>
                 </Box>
                 <Button
@@ -506,6 +498,9 @@ export default function App() {
                   }
                   await addToTwitterWalletAccounts({
                     twitterId: twitterUser?.uid || '',
+                    name: twitterUser.displayName,
+                    username:
+                      (twitterUser as any).reloadUserInfo?.screenName || '',
                     connectedWalletAddress: primaryWallet.address,
                     projectId: 'adam_songjam',
                     stakedBalance: stakingInfo.balance,

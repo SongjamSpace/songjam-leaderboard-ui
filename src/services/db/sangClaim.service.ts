@@ -119,6 +119,8 @@ export type TwitterAccountWalletAddress = {
   connectedWalletAddress: string;
   projectId: string;
   stakedBalance: string;
+  name?: string | null;
+  username?: string;
 };
 
 export const addToTwitterWalletAccounts = async (
