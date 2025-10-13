@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import './App.css';
 import { Box, Container, Typography, Paper, Button } from '@mui/material';
 import { CheckCircle } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import toast from 'react-hot-toast';
 import {
@@ -21,6 +22,7 @@ import { getSangStakingStatus } from './services/sang.service';
 import axios from 'axios';
 
 export default function App() {
+  const navigate = useNavigate();
   const { connectWallet } = useConnectWallet();
   const { wallets } = useWallets();
   const [primaryWallet] = wallets;
@@ -519,12 +521,87 @@ export default function App() {
                   toast.success('Wallet submitted successfully');
                 }}
                 disabled={isSubmitting}
+                sx={{
+                  background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
+                  color: 'white',
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: '25px',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  fontSize: '1rem',
+                  boxShadow: '0 4px 15px rgba(139, 92, 246, 0.3)',
+                  '&:hover': {
+                    background: 'linear-gradient(45deg, #7c3aed, #db2777)',
+                    boxShadow: '0 6px 20px rgba(139, 92, 246, 0.4)',
+                  },
+                  '&:disabled': {
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    color: 'rgba(255, 255, 255, 0.3)',
+                  },
+                }}
               >
                 Submit
               </Button>
             </Box>
           )}
         </Paper>
+
+        {/* Staking Section */}
+        <Box
+          sx={{
+            mt: 4,
+            pt: 3,
+            borderTop: '1px solid rgba(139, 92, 246, 0.2)',
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              color: 'white',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              mb: 2,
+            }}
+          >
+            Need to Stake $SANG?
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              textAlign: 'center',
+              mb: 3,
+              lineHeight: 1.6,
+            }}
+          >
+            Stake at least 10,000 $SANG tokens to participate in the leaderboard
+            and earn multipliers.
+          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Button
+              variant="contained"
+              onClick={() => navigate('/stake')}
+              sx={{
+                background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
+                color: 'white',
+                px: 4,
+                py: 1.5,
+                borderRadius: '25px',
+                fontWeight: 'bold',
+                textTransform: 'none',
+                fontSize: '1rem',
+                boxShadow: '0 4px 15px rgba(139, 92, 246, 0.3)',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #7c3aed, #db2777)',
+                  boxShadow: '0 6px 20px rgba(139, 92, 246, 0.4)',
+                },
+              }}
+            >
+              Stake $SANG
+            </Button>
+          </Box>
+        </Box>
       </Container>
 
       <Toaster position="bottom-center" />

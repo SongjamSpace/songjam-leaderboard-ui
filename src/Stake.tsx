@@ -371,7 +371,7 @@ export const Stake = () => {
                 try {
                   setIsStaking(true);
                   const result = await stakeSangTokens(
-                    primaryWallet as any,
+                    primaryWallet,
                     stakeAmount
                   );
                   if (result.success) {

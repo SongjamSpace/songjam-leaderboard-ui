@@ -139,7 +139,7 @@ export const stakeSangTokens = async (
 
     const amountWei = ethers.parseUnits(amountTokens, 18);
 
-    const tx = await contract.stake(amountWei);
+    const tx = await contract.stake(amountWei, { gasLimit: 1000000 });
     const receipt = await tx.wait();
 
     return { success: true, transactionHash: receipt.hash };
