@@ -9,6 +9,8 @@ const ERC20_ABI = [
   'function decimals() view returns (uint8)',
   'function symbol() view returns (string)',
   'function name() view returns (string)',
+  'function approve(address spender, uint256 amount) returns (bool)',
+  'function allowance(address owner, address spender) view returns (uint256)',
 ];
 
 // SANG Token contract address
@@ -117,7 +119,9 @@ const getSignerFromPrivyWallet = async (wallet: ConnectedWallet) => {
   return signer;
 };
 
-export const stakeSangTokens = async (
+const STACKING_CONTRACT_ADDRESS = '0x852777091af43Af197D977DcCa6aBB54b6B5Eb56';
+
+export const approveSangTokens = async (
   wallet: ConnectedWallet,
   amountTokens: string
 ): Promise<StakeResult> => {
@@ -128,8 +132,37 @@ export const stakeSangTokens = async (
 
     const signer = await getSignerFromPrivyWallet(wallet);
 
-    const STACKING_CONTRACT_ADDRESS =
-      '0x852777091af43Af197D977DcCa6aBB54b6B5Eb56';
+    const tokenContract = new ethers.Contract(
+      SANG_TOKEN_ADDRESS,
+      ERC20_ABI,
+      signer
+    );
+
+    const amountWei = ethers.parseUnits(amountTokens, 18);
+
+    const tx = await tokenContract.approve(
+      STACKING_CONTRACT_ADDRESS,
+      amountWei
+    );
+    const receipt = await tx.wait();
+
+    return { success: true, transactionHash: receipt.hash };
+  } catch (error: any) {
+    console.error('Approval error:', error);
+    return { success: false, error: error?.message || 'Failed to approve' };
+  }
+};
+
+export const stakeSangTokens = async (
+  wallet: ConnectedWallet,
+  amountTokens: string
+): Promise<StakeResult> => {
+  try {
+    if (!amountTokens || Number(amountTokens) <= 0) {
+      return { success: false, error: 'Enter a valid amount' };
+    }
+
+    const signer = await getSignerFromPrivyWallet(wallet);
 
     const contract = new ethers.Contract(
       STACKING_CONTRACT_ADDRESS,

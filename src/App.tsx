@@ -56,6 +56,8 @@ export default function App() {
     }
   };
 
+  console.log({ twitterUser });
+
   const currentStep = twitterUser ? (primaryWallet ? 3 : 2) : 1;
 
   return (
@@ -498,11 +500,17 @@ export default function App() {
                     alert('Please stake at least 10,000 SANG tokens');
                     return;
                   }
+                  const twitterInfo = twitterUser.providerData.find(
+                    (p) => p.providerId === 'twitter.com'
+                  );
+                  if (!twitterInfo)
+                    return alert('Something went wrong, try again later');
+                  const username =
+                    (twitterUser as any).reloadUserInfo?.screenName || '';
                   await addToTwitterWalletAccounts({
-                    twitterId: twitterUser?.uid || '',
-                    name: twitterUser.displayName,
-                    username:
-                      (twitterUser as any).reloadUserInfo?.screenName || '',
+                    twitterId: twitterInfo.uid || '',
+                    name: twitterInfo.displayName,
+                    username: username,
                     connectedWalletAddress: primaryWallet.address,
                     projectId: 'adam_songjam',
                     stakedBalance: stakingInfo.balance,

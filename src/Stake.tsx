@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import { useWallets, useConnectWallet } from '@privy-io/react-auth';
 import {
   stakeSangTokens,
+  approveSangTokens,
   getSangBalance,
   SangBalanceInfo,
 } from './services/sang.service';
@@ -254,8 +255,8 @@ export const Stake = () => {
                 textAlign: 'left',
               }}
             >
-              Enter the amount of SANG to stake. A wallet transaction will be
-              required.
+              Enter the amount of SANG to stake. Two wallet transactions will be
+              required: one to approve and one to stake.
             </Typography>
             <TextField
               fullWidth
@@ -370,12 +371,36 @@ export const Stake = () => {
                 }
                 try {
                   setIsStaking(true);
+
+                  // Step 1: Approve the staking contract
+                  toast.loading('Approving SANG tokens...');
+                  const approvalResult = await approveSangTokens(
+                    primaryWallet,
+                    stakeAmount
+                  );
+
+                  if (!approvalResult.success) {
+                    toast.dismiss();
+                    toast.error(
+                      approvalResult.error || 'Failed to approve tokens'
+                    );
+                    return;
+                  }
+
+                  toast.dismiss();
+                  toast.success('Tokens approved successfully!');
+
+                  // Step 2: Stake the tokens
+                  toast.loading('Staking SANG tokens...');
                   const result = await stakeSangTokens(
                     primaryWallet,
                     stakeAmount
                   );
+
+                  toast.dismiss();
+
                   if (result.success) {
-                    toast.success('Stake submitted');
+                    toast.success('Stake submitted successfully!');
                     setStakeAmount('');
                     // Refresh balance after successful staking
                     await fetchSangBalance();
@@ -383,6 +408,7 @@ export const Stake = () => {
                     toast.error(result.error || 'Failed to stake');
                   }
                 } catch (e: any) {
+                  toast.dismiss();
                   toast.error(e?.message || 'Failed to stake');
                 } finally {
                   setIsStaking(false);
@@ -395,7 +421,7 @@ export const Stake = () => {
                 fontWeight: 'bold',
               }}
             >
-              {isStaking ? 'Staking…' : 'Stake'}
+              {isStaking ? 'Processing…' : 'Approve & Stake'}
             </Button>
           </Box>
         )}
