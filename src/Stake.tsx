@@ -25,6 +25,8 @@ export const Stake = () => {
   const [isStaking, setIsStaking] = useState(false);
   const [sangBalance, setSangBalance] = useState<SangBalanceInfo | null>(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
+  const [isApproved, setIsApproved] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
 
   const formatWalletAddress = (address: string) => {
     if (!address) return '';
@@ -255,13 +257,17 @@ export const Stake = () => {
                 textAlign: 'left',
               }}
             >
-              Enter the amount of SANG to stake. Two wallet transactions will be
-              required: one to approve and one to stake.
+              Enter the amount of SANG to stake. First approve the tokens, then
+              click stake to complete the process.
             </Typography>
             <TextField
               fullWidth
               value={stakeAmount}
-              onChange={(e) => setStakeAmount(e.target.value)}
+              onChange={(e) => {
+                setStakeAmount(e.target.value);
+                // Reset approval state when amount changes
+                setIsApproved(false);
+              }}
               placeholder="0.0"
               type="number"
               inputProps={{ min: '0', step: 'any' }}
@@ -285,9 +291,11 @@ export const Stake = () => {
                       {sangBalance && (
                         <Button
                           size="small"
-                          onClick={() =>
-                            setStakeAmount(sangBalance.formattedBalance)
-                          }
+                          onClick={() => {
+                            setStakeAmount(sangBalance.formattedBalance);
+                            // Reset approval state when MAX is clicked
+                            setIsApproved(false);
+                          }}
                           sx={{
                             color: '#8B5CF6',
                             textTransform: 'none',
@@ -347,6 +355,7 @@ export const Stake = () => {
               fullWidth
               disabled={
                 isStaking ||
+                isApproving ||
                 !primaryWallet ||
                 !stakeAmount ||
                 !sangBalance ||
@@ -369,59 +378,78 @@ export const Stake = () => {
                   toast.error('Insufficient SANG balance');
                   return;
                 }
+
                 try {
-                  setIsStaking(true);
-
-                  // Step 1: Approve the staking contract
-                  toast.loading('Approving SANG tokens...');
-                  const approvalResult = await approveSangTokens(
-                    primaryWallet,
-                    stakeAmount
-                  );
-
-                  if (!approvalResult.success) {
-                    toast.dismiss();
-                    toast.error(
-                      approvalResult.error || 'Failed to approve tokens'
+                  if (!isApproved) {
+                    // Step 1: Approve the staking contract
+                    setIsApproving(true);
+                    toast.loading('Approving SANG tokens...');
+                    const approvalResult = await approveSangTokens(
+                      primaryWallet,
+                      stakeAmount
                     );
-                    return;
-                  }
 
-                  toast.dismiss();
-                  toast.success('Tokens approved successfully!');
+                    toast.dismiss();
 
-                  // Step 2: Stake the tokens
-                  toast.loading('Staking SANG tokens...');
-                  const result = await stakeSangTokens(
-                    primaryWallet,
-                    stakeAmount
-                  );
+                    if (!approvalResult.success) {
+                      toast.error(
+                        approvalResult.error || 'Failed to approve tokens'
+                      );
+                      return;
+                    }
 
-                  toast.dismiss();
-
-                  if (result.success) {
-                    toast.success('Stake submitted successfully!');
-                    setStakeAmount('');
-                    // Refresh balance after successful staking
-                    await fetchSangBalance();
+                    toast.success(
+                      'Tokens approved successfully! Now click Stake.'
+                    );
+                    setIsApproved(true);
                   } else {
-                    toast.error(result.error || 'Failed to stake');
+                    // Step 2: Stake the tokens
+                    setIsStaking(true);
+                    toast.loading('Staking SANG tokens...');
+                    const result = await stakeSangTokens(
+                      primaryWallet,
+                      stakeAmount
+                    );
+
+                    toast.dismiss();
+
+                    if (result.success) {
+                      toast.success('Stake submitted successfully!');
+                      setStakeAmount('');
+                      setIsApproved(false);
+                      // Refresh balance after successful staking
+                      await fetchSangBalance();
+                    } else {
+                      toast.error(result.error || 'Failed to stake');
+                    }
                   }
                 } catch (e: any) {
                   toast.dismiss();
-                  toast.error(e?.message || 'Failed to stake');
+                  toast.error(
+                    e?.message ||
+                      `Failed to ${isApproved ? 'stake' : 'approve'}`
+                  );
                 } finally {
                   setIsStaking(false);
+                  setIsApproving(false);
                 }
               }}
               sx={{
-                background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
+                background: isApproved
+                  ? 'linear-gradient(45deg, #10b981, #059669)'
+                  : 'linear-gradient(45deg, #8B5CF6, #EC4899)',
                 color: 'white',
                 textTransform: 'none',
                 fontWeight: 'bold',
               }}
             >
-              {isStaking ? 'Processing…' : 'Approve & Stake'}
+              {isApproving
+                ? 'Approving…'
+                : isStaking
+                ? 'Staking…'
+                : isApproved
+                ? 'Stake'
+                : 'Approve'}
             </Button>
           </Box>
         )}
