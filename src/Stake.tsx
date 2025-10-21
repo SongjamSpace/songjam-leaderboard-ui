@@ -43,8 +43,8 @@ export const Stake = () => {
     setIsLoadingBalance(true);
     try {
       const [balance, stakingStatus] = await Promise.all([
-        getSangBalance('0x7c10338a37DDeb4506BC4F73CBD2a970b7281c36'),
-        getSangStakingStatus('0x7c10338a37DDeb4506BC4F73CBD2a970b7281c36'),
+        getSangBalance(primaryWallet.address),
+        getSangStakingStatus(primaryWallet.address),
       ]);
       setSangBalance(balance);
       setSangStakingStatus(stakingStatus);
