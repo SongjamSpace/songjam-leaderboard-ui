@@ -14,6 +14,8 @@ import {
   approveSangTokens,
   getSangBalance,
   SangBalanceInfo,
+  getSangStakingStatus,
+  SangStakingInfo,
 } from './services/sang.service';
 import { base } from 'viem/chains';
 
@@ -24,6 +26,8 @@ export const Stake = () => {
   const [stakeAmount, setStakeAmount] = useState('');
   const [isStaking, setIsStaking] = useState(false);
   const [sangBalance, setSangBalance] = useState<SangBalanceInfo | null>(null);
+  const [sangStakingStatus, setSangStakingStatus] =
+    useState<SangStakingInfo | null>(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
@@ -38,8 +42,12 @@ export const Stake = () => {
 
     setIsLoadingBalance(true);
     try {
-      const balance = await getSangBalance(primaryWallet.address);
+      const [balance, stakingStatus] = await Promise.all([
+        getSangBalance('0x7c10338a37DDeb4506BC4F73CBD2a970b7281c36'),
+        getSangStakingStatus('0x7c10338a37DDeb4506BC4F73CBD2a970b7281c36'),
+      ]);
       setSangBalance(balance);
+      setSangStakingStatus(stakingStatus);
     } catch (error) {
       console.error('Error fetching SANG balance:', error);
       toast.error('Failed to fetch SANG balance');
@@ -54,6 +62,7 @@ export const Stake = () => {
       fetchSangBalance();
     } else {
       setSangBalance(null);
+      setSangStakingStatus(null);
     }
   }, [primaryWallet]);
 
@@ -193,33 +202,88 @@ export const Stake = () => {
                 {formatWalletAddress(primaryWallet.address)}
               </Typography>
 
-              {/* <Box sx={{ mt: 2 }}>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: 'rgba(255,255,255,0.7)',
-                    mb: 1,
-                  }}
-                >
-                  SANG Balance:
-                </Typography>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    color: '#8B5CF6',
-                    fontWeight: 'bold',
-                    fontFamily: 'monospace',
-                  }}
-                >
-                  {isLoadingBalance
-                    ? 'Loading...'
-                    : sangBalance
-                    ? `${parseFloat(sangBalance.formattedBalance).toFixed(4)} ${
-                        sangBalance.symbol
-                      }`
-                    : '0.0000 SANG'}
-                </Typography>
-              </Box> */}
+              <Box
+                sx={{
+                  mt: 2,
+                  display: 'flex',
+                  gap: 3,
+                  justifyContent: 'center',
+                }}
+              >
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: 'rgba(255,255,255,0.6)',
+                      mb: 0.5,
+                      fontSize: '0.75rem',
+                    }}
+                  >
+                    Wallet Balance
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color: '#8B5CF6',
+                      fontWeight: 'bold',
+                      fontFamily: 'monospace',
+                    }}
+                  >
+                    {isLoadingBalance
+                      ? 'Loading...'
+                      : sangBalance
+                      ? `${parseFloat(sangBalance.formattedBalance).toFixed(2)}`
+                      : '0.00'}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: 'rgba(255,255,255,0.5)',
+                      fontSize: '0.7rem',
+                    }}
+                  >
+                    SANG
+                  </Typography>
+                </Box>
+
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: 'rgba(255,255,255,0.6)',
+                      mb: 0.5,
+                      fontSize: '0.75rem',
+                    }}
+                  >
+                    Staked Balance
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color: '#EC4899',
+                      fontWeight: 'bold',
+                      fontFamily: 'monospace',
+                    }}
+                  >
+                    {isLoadingBalance
+                      ? 'Loading...'
+                      : sangStakingStatus
+                      ? `${parseFloat(
+                          sangStakingStatus.formattedBalance
+                        ).toFixed(2)}`
+                      : '0.00'}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: 'rgba(255,255,255,0.5)',
+                      fontSize: '0.7rem',
+                    }}
+                  >
+                    SANG
+                  </Typography>
+                </Box>
+              </Box>
             </Box>
           )}
         </Box>
