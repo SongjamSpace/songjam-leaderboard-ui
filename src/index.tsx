@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useState, useMemo } from 'react';
 import ReactDOM from 'react-dom/client';
 import './App.css';
 import ClaimSangTokens from './pages/ClaimSangTokens';
@@ -21,6 +21,17 @@ import { base } from 'viem/chains';
 import App from './App';
 import Submit from './pages/Submit';
 import { Stake } from './Stake';
+import AdamCommit from './pages/AdamCommit';
+import { SolanaProvider } from './components/solanaProvider';
+import {
+  ConnectionProvider,
+  WalletProvider,
+} from '@solana/wallet-adapter-react';
+import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
+
+// Import wallet adapter CSS
+import '@solana/wallet-adapter-react-ui/styles.css';
 
 WebFont.load({
   google: {
@@ -51,8 +62,21 @@ export const songjamGenesisTestnetChain = defineChain({
   },
 });
 
+// Solana configuration
+const SOLANA_RPC_ENDPOINT =
+  'https://solana-mainnet.g.alchemy.com/v2/msW-VXqdG8DyOJaNmYNRF';
+
 // Wrapper component to manage login state
 function Web3Wrapper() {
+  // Configure wallets
+  const wallets = useMemo(
+    () => [
+      new PhantomWalletAdapter(),
+      // Add more wallet adapters here if needed
+    ],
+    []
+  );
+
   return (
     <PrivyProvider
       appId={import.meta.env.VITE_PRIVY_APP_ID}
@@ -82,20 +106,27 @@ function Web3Wrapper() {
       }}
     >
       <ThemeProvider theme={theme}>
-        {/* <AuthProvider> */}
-        <Routes>
-          <Route path="/" element={<App />} />
-          <Route path="/stake" element={<Stake />} />
-          <Route path="/elytra" element={<Elytra />} />
-          {/* <Route path="/evaonlinexyz" element={<EvaOnlineXyz />} /> */}
-          <Route path="/wachai" element={<WachAi />} />
-          <Route path="/flag" element={<Review />} />
-          <Route path="/review" element={<Review />} />
-          <Route path="/hyperliquidx" element={<HyperLiquid />} />
-          <Route path="/creator" element={<Creator />} />
-          <Route path="/submit" element={<Submit />} />
-        </Routes>
-        {/* </AuthProvider> */}
+        <ConnectionProvider endpoint={SOLANA_RPC_ENDPOINT}>
+          <WalletProvider wallets={wallets} autoConnect>
+            <WalletModalProvider>
+              <SolanaProvider>
+                <Routes>
+                  <Route path="/" element={<App />} />
+                  <Route path="/stake" element={<Stake />} />
+                  <Route path="/elytra" element={<Elytra />} />
+                  {/* <Route path="/evaonlinexyz" element={<EvaOnlineXyz />} /> */}
+                  <Route path="/wachai" element={<WachAi />} />
+                  <Route path="/flag" element={<Review />} />
+                  <Route path="/review" element={<Review />} />
+                  <Route path="/hyperliquidx" element={<HyperLiquid />} />
+                  <Route path="/creator" element={<Creator />} />
+                  <Route path="/submit" element={<Submit />} />
+                  <Route path="/adam" element={<AdamCommit />} />
+                </Routes>
+              </SolanaProvider>
+            </WalletModalProvider>
+          </WalletProvider>
+        </ConnectionProvider>
       </ThemeProvider>
     </PrivyProvider>
   );

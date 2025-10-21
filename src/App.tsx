@@ -238,7 +238,6 @@ export default function App() {
                     color: 'white',
                     px: 4,
                     py: 1.5,
-                    borderRadius: '25px',
                     fontWeight: 'bold',
                     textTransform: 'none',
                     fontSize: '1rem',
@@ -431,7 +430,6 @@ export default function App() {
                       currentStep >= 2 ? 'white' : 'rgba(255, 255, 255, 0.3)',
                     px: 4,
                     py: 1.5,
-                    borderRadius: '25px',
                     fontWeight: 'bold',
                     textTransform: 'none',
                     fontSize: '1rem',
@@ -588,14 +586,12 @@ export default function App() {
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <Button
-              variant="contained"
+              variant="outlined"
               onClick={() => navigate('/stake')}
               sx={{
-                background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
                 color: 'white',
                 px: 4,
                 py: 1.5,
-                borderRadius: '25px',
                 fontWeight: 'bold',
                 textTransform: 'none',
                 fontSize: '1rem',
