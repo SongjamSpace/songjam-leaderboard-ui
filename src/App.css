@@ -1,3 +1,10 @@
+@font-face {
+  font-family: 'Ubuntu Title';
+  src: url('/fonts/Ubuntu-Title.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 :root {
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;

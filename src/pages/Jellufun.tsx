@@ -77,10 +77,9 @@ export default function Jellufun() {
   // Check if user exists in JELLU leaderboard as soon as they sign in
   useEffect(() => {
     const checkLeaderboard = async () => {
-      const twitterId = '1742117048371871744';
-      //   twitterUser?.providerData.find(
-      //     (p) => p.providerId === 'twitter.com'
-      //   )?.uid;
+      const twitterId = twitterUser?.providerData.find(
+        (p) => p.providerId === 'twitter.com'
+      )?.uid;
       if (!twitterId) {
         setExistsInLeaderboard(null);
         return;
@@ -153,6 +152,7 @@ export default function Jellufun() {
             textAlign: 'center',
             mb: 2,
             textShadow: '0 0 20px rgba(236, 72, 153, 0.3)',
+            fontFamily: '"Ubuntu Title", sans-serif',
           }}
         >
           Welcome to Jellu
@@ -166,6 +166,7 @@ export default function Jellufun() {
             textAlign: 'center',
             mb: 6,
             fontWeight: 'normal',
+            fontFamily: '"Ubuntu Title", sans-serif',
           }}
         >
           Submit your account and wallet address for airdrop
@@ -179,6 +180,37 @@ export default function Jellufun() {
             borderRadius: '20px',
             border: '1px solid rgba(139, 92, 246, 0.3)',
             backdropFilter: 'blur(10px)',
+            position: 'relative',
+            '&:before': {
+              content: '""',
+              position: 'absolute',
+              top: -20,
+              right: -20,
+              width: 80,
+              height: 80,
+              backgroundImage: 'url(/logos/jellu_airdrop.png)',
+              backgroundSize: 'contain',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'center',
+              transform: 'scale(1.5)',
+              transition: 'transform 0.3s ease',
+              zIndex: 1,
+            },
+            '&:after': {
+              content: '""',
+              position: 'absolute',
+              bottom: -20,
+              left: -20,
+              width: 80,
+              height: 80,
+              backgroundImage: 'url(/logos/jellu_airdrop.png)',
+              backgroundSize: 'contain',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'center',
+              transform: 'scale(1.5)',
+              transition: 'transform 0.3s ease',
+              zIndex: 1,
+            },
           }}
         >
           {/* Step 1: Connect X */}
@@ -215,6 +247,7 @@ export default function Jellufun() {
                 sx={{
                   color: 'white',
                   fontWeight: 'bold',
+                  fontFamily: '"Ubuntu Title", sans-serif',
                 }}
               >
                 Connect X Account
@@ -363,6 +396,7 @@ export default function Jellufun() {
                   color:
                     currentStep >= 2 ? 'white' : 'rgba(255, 255, 255, 0.5)',
                   fontWeight: 'bold',
+                  fontFamily: '"Ubuntu Title", sans-serif',
                 }}
               >
                 Connect Wallet for Airdrop
