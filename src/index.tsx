@@ -32,6 +32,7 @@ import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
 
 // Import wallet adapter CSS
 import '@solana/wallet-adapter-react-ui/styles.css';
+import Jellufun from './pages/Jellufun';
 
 WebFont.load({
   google: {
@@ -122,6 +123,7 @@ function Web3Wrapper() {
                   <Route path="/creator" element={<Creator />} />
                   <Route path="/submit" element={<Submit />} />
                   <Route path="/adam" element={<AdamCommit />} />
+                  <Route path="/jellu" element={<Jellufun />} />
                 </Routes>
               </SolanaProvider>
             </WalletModalProvider>

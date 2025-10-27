@@ -16,10 +16,17 @@ import {
 
 // const SONGJAM_LEADERBOARD_COLLECTION_NAME = 'singPointsLeaderboard_18_06_2025';
 
-const userIdExistsInLeaderboard = async (userId: string, id: 'SANG') => {
+const userIdExistsInLeaderboard = async (
+  userId: string,
+  id: 'SANG' | 'JELLU'
+) => {
   // return {totalPoints: 12};
+  const projectIdMapping = {
+    SANG: 'songjamspace',
+    JELLU: 'jellu69',
+  };
   const lb = await axios.get(
-    'https://songjamspace-leaderboard.logesh-063.workers.dev/songjamspace'
+    `https://songjamspace-leaderboard.logesh-063.workers.dev/${projectIdMapping[id]}`
   );
   const exists = lb.data.find((u: LeaderboardUser) => u.userId === userId);
   return exists;

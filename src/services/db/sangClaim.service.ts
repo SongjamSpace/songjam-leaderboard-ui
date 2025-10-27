@@ -7,6 +7,7 @@ import { CreatorTokenInfo } from '../creatorToken.service';
 const CLAIM_SANG_TOKENS_COLLECTION = 'sang_airdrop_wallets';
 const CLAIM_EVA_TOKENS_COLLECTION = 'eva_airdrop_wallets';
 const CLAIM_WACHAI_TOKENS_COLLECTION = 'wachai_airdrop_wallets';
+const CLAIM_JELLU_TOKENS_COLLECTION = 'jellu_airdrop_wallets';
 
 export interface TokenSubmitWallet {
   walletAddress: string;
@@ -23,7 +24,7 @@ export interface TokenSubmitWallet {
 export const submitTokenForAirdrop = async (
   twitterId: string,
   claimTokens: TokenSubmitWallet,
-  id: 'SANG' | 'EVA' | 'WACHAI'
+  id: 'SANG' | 'EVA' | 'WACHAI' | 'JELLU'
 ) => {
   const collectionName = idCollectionMapping[id];
   const claimTokensRef = doc(db, collectionName, twitterId);
@@ -38,11 +39,12 @@ const idCollectionMapping = {
   SANG: CLAIM_SANG_TOKENS_COLLECTION,
   EVA: CLAIM_EVA_TOKENS_COLLECTION,
   WACHAI: CLAIM_WACHAI_TOKENS_COLLECTION,
+  JELLU: CLAIM_JELLU_TOKENS_COLLECTION,
 };
 
 export const getWalletForAirdrop = async (
   twitterId: string,
-  id: 'SANG' | 'EVA' | 'WACHAI'
+  id: 'SANG' | 'EVA' | 'WACHAI' | 'JELLU'
 ) => {
   const collectionName = idCollectionMapping[id];
   const claimTokensRef = doc(db, collectionName, twitterId);
@@ -52,7 +54,7 @@ export const getWalletForAirdrop = async (
 
 export const updateCreatorTokenInfo = async (
   twitterId: string,
-  id: 'SANG' | 'EVA' | 'WACHAI',
+  id: 'SANG' | 'EVA' | 'WACHAI' | 'JELLU',
   {
     tokenName,
     tokenSymbol,
@@ -124,14 +126,20 @@ export type TwitterAccountWalletAddress = {
 };
 
 export const addToTwitterWalletAccounts = async (
+  docId: string,
   obj: TwitterAccountWalletAddress
 ) => {
-  const docRef = doc(db, 'twitterWalletAccounts', obj.twitterId);
+  const docRef = doc(db, 'twitterWalletAccounts', docId);
   await setDoc(docRef, { ...obj, createdAt: Date.now() });
 };
 
-export const getTwitterWalletById = async (twitterId: string) => {
-  const docRef = doc(db, 'twitterWalletAccounts', twitterId);
+export const getTwitterWalletById = async (
+  twitterId: string,
+  projectId: string
+) => {
+  const docId =
+    projectId === 'adam_songjam' ? twitterId : `${twitterId}_${projectId}`;
+  const docRef = doc(db, 'twitterWalletAccounts', docId);
   const docSs = await getDoc(docRef);
   if (docSs.exists()) {
     return docSs.data() as TwitterAccountWalletAddress;

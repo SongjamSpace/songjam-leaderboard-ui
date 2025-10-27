@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import './App.css';
 import { Box, Container, Typography, Paper, Button } from '@mui/material';
 import { CheckCircle } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -10,19 +9,21 @@ import {
   TwitterAuthProvider,
   onAuthStateChanged,
   User,
+  UserInfo,
 } from 'firebase/auth';
-import { auth } from './services/firebase.service';
+import { auth } from '../services/firebase.service';
 import { useConnectWallet, useWallets } from '@privy-io/react-auth';
 import {
   addToTwitterWalletAccounts,
   getTwitterWalletById,
   TwitterAccountWalletAddress,
-} from './services/db/sangClaim.service';
-import { getSangStakingStatus } from './services/sang.service';
+} from '../services/db/sangClaim.service';
+import { userIdExistsInLeaderboard } from '../services/db/leaderboard.service';
 import axios from 'axios';
 
-export default function App() {
-  const navigate = useNavigate();
+const projectId = 'jellu69';
+
+export default function Jellufun() {
   const { connectWallet } = useConnectWallet();
   const { wallets } = useWallets();
   const [primaryWallet] = wallets;
@@ -32,14 +33,38 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasAttemptedAutoConnect, setHasAttemptedAutoConnect] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [existsInLeaderboard, setExistsInLeaderboard] = useState<
+    boolean | null
+  >(null);
+  const [isCheckingLeaderboard, setIsCheckingLeaderboard] = useState(false);
+
+  const fetchAlreadySubmitted = async (user?: UserInfo) => {
+    if (!user) {
+      return;
+    }
+    const twitterWallet = await getTwitterWalletById(
+      user.uid || '',
+      'adam_songjam'
+    );
+    if (twitterWallet) {
+      setAlreadySubmittedDoc(twitterWallet);
+    }
+  };
 
   // Listen to auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setIsLoading(false);
+      const twitterObj = user?.providerData.find(
+        (p) => p.providerId === 'twitter.com'
+      );
+      if (!twitterObj) {
+        return;
+      }
+      await fetchAlreadySubmitted(twitterObj);
       const twitterWallet = await getTwitterWalletById(
-        user?.uid || '',
-        'adam_songjam'
+        twitterObj.uid,
+        projectId
       );
       setTwitterUser(user);
       if (twitterWallet) {
@@ -48,6 +73,33 @@ export default function App() {
     });
     return () => unsubscribe();
   }, []);
+
+  // Check if user exists in JELLU leaderboard as soon as they sign in
+  useEffect(() => {
+    const checkLeaderboard = async () => {
+      const twitterId = '1742117048371871744';
+      //   twitterUser?.providerData.find(
+      //     (p) => p.providerId === 'twitter.com'
+      //   )?.uid;
+      if (!twitterId) {
+        setExistsInLeaderboard(null);
+        return;
+      }
+
+      setIsCheckingLeaderboard(true);
+      try {
+        const exists = await userIdExistsInLeaderboard(twitterId, 'JELLU');
+        setExistsInLeaderboard(!!exists);
+      } catch (error) {
+        console.error('Error checking leaderboard:', error);
+        setExistsInLeaderboard(false);
+      } finally {
+        setIsCheckingLeaderboard(false);
+      }
+    };
+
+    checkLeaderboard();
+  }, [twitterUser]);
 
   const handleTwitterSignIn = async () => {
     try {
@@ -58,8 +110,6 @@ export default function App() {
       console.error('Twitter sign-in error:', error);
     }
   };
-
-  console.log({ twitterUser });
 
   const currentStep = twitterUser ? (primaryWallet ? 3 : 2) : 1;
 
@@ -82,7 +132,7 @@ export default function App() {
           width: '100vw',
           height: '100vh',
           zIndex: 0,
-          backgroundImage: 'url(/logos/songjam_logo.png)',
+          backgroundImage: 'url(/logos/jellu.png)',
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'center',
           backgroundSize: 'cover',
@@ -105,7 +155,7 @@ export default function App() {
             textShadow: '0 0 20px rgba(236, 72, 153, 0.3)',
           }}
         >
-          Welcome to Songjam
+          Welcome to Jellu
         </Typography>
 
         {/* Subtitle */}
@@ -118,7 +168,7 @@ export default function App() {
             fontWeight: 'normal',
           }}
         >
-          Submit your account and staking wallet address
+          Submit your account and wallet address for airdrop
         </Typography>
 
         {/* Steps Container */}
@@ -315,48 +365,9 @@ export default function App() {
                   fontWeight: 'bold',
                 }}
               >
-                Connect Staking Wallet
+                Connect Wallet for Airdrop
               </Typography>
             </Box>
-            {alreadySubmittedDoc && (
-              <Box
-                sx={{
-                  my: 2,
-                  ml: 7,
-                  p: 2,
-                  background: 'rgba(34, 197, 94, 0.1)',
-                  borderRadius: '10px',
-                  border: '1px solid rgba(34, 197, 94, 0.3)',
-
-                  display: 'flex',
-                  gap: 2,
-                  alignItems: 'center',
-                }}
-              >
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: 'rgba(34, 197, 94, 0.8)',
-                    fontSize: '0.75rem',
-                    display: 'block',
-                  }}
-                >
-                  Currently Submitted:
-                </Typography>
-                <Typography
-                  sx={{
-                    color: 'rgb(34, 197, 94)',
-                    fontWeight: 'bold',
-                    fontSize: '0.9rem',
-                  }}
-                >
-                  {alreadySubmittedDoc.connectedWalletAddress?.slice(0, 6)}
-                  ...
-                  {alreadySubmittedDoc.connectedWalletAddress?.slice(-4)}
-                </Typography>
-              </Box>
-            )}
-
             {primaryWallet ? (
               <Box sx={{ ml: 7 }}>
                 <Box
@@ -420,69 +431,173 @@ export default function App() {
               </Box>
             ) : (
               <Box sx={{ ml: 7 }}>
-                <Button
-                  variant="contained"
-                  onClick={connectWallet}
-                  disabled={!twitterUser || isSubmitting}
-                  sx={{
-                    background:
-                      currentStep >= 2
-                        ? 'linear-gradient(45deg, #8B5CF6, #EC4899)'
-                        : 'rgba(255, 255, 255, 0.1)',
-                    color:
-                      currentStep >= 2 ? 'white' : 'rgba(255, 255, 255, 0.3)',
-                    px: 4,
-                    py: 1.5,
-                    fontWeight: 'bold',
-                    textTransform: 'none',
-                    fontSize: '1rem',
-                    boxShadow:
-                      currentStep >= 2
-                        ? '0 4px 15px rgba(139, 92, 246, 0.3)'
-                        : 'none',
-                    '&:hover': {
-                      background:
-                        currentStep >= 2
-                          ? 'linear-gradient(45deg, #7c3aed, #db2777)'
-                          : 'rgba(255, 255, 255, 0.1)',
-                      boxShadow:
-                        currentStep >= 2
-                          ? '0 6px 20px rgba(139, 92, 246, 0.4)'
-                          : 'none',
-                    },
-                    '&:disabled': {
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      color: 'rgba(255, 255, 255, 0.3)',
-                    },
-                  }}
-                >
-                  Connect Staking Wallet
-                </Button>
-                {!twitterUser && (
-                  <Typography
-                    variant="caption"
+                {existsInLeaderboard === false ? (
+                  <Box
                     sx={{
-                      display: 'block',
-                      color: 'rgba(255, 255, 255, 0.5)',
-                      mt: 1,
+                      p: 2.5,
+                      background: 'rgba(239, 68, 68, 0.1)',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(239, 68, 68, 0.3)',
+                      textAlign: 'center',
                     }}
                   >
-                    Complete step 1 first
-                  </Typography>
+                    <Typography
+                      sx={{
+                        color: 'rgba(239, 68, 68, 0.9)',
+                        fontWeight: 'bold',
+                        fontSize: '0.9rem',
+                      }}
+                    >
+                      You are not eligible for airdrop
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        display: 'block',
+                        color: 'rgba(239, 68, 68, 0.7)',
+                        mt: 1,
+                      }}
+                    >
+                      Your account is not found in the JELLU leaderboard
+                    </Typography>
+                  </Box>
+                ) : (
+                  <>
+                    <Button
+                      variant="contained"
+                      onClick={connectWallet}
+                      disabled={
+                        !twitterUser ||
+                        isSubmitting ||
+                        isCheckingLeaderboard ||
+                        !existsInLeaderboard
+                      }
+                      sx={{
+                        background:
+                          currentStep >= 2 && existsInLeaderboard === true
+                            ? 'linear-gradient(45deg, #8B5CF6, #EC4899)'
+                            : 'rgba(255, 255, 255, 0.1)',
+                        color:
+                          currentStep >= 2 && existsInLeaderboard === true
+                            ? 'white'
+                            : 'rgba(255, 255, 255, 0.3)',
+                        px: 4,
+                        py: 1.5,
+                        fontWeight: 'bold',
+                        textTransform: 'none',
+                        fontSize: '1rem',
+                        boxShadow:
+                          currentStep >= 2 && existsInLeaderboard === true
+                            ? '0 4px 15px rgba(139, 92, 246, 0.3)'
+                            : 'none',
+                        '&:hover': {
+                          background:
+                            currentStep >= 2 && existsInLeaderboard === true
+                              ? 'linear-gradient(45deg, #7c3aed, #db2777)'
+                              : 'rgba(255, 255, 255, 0.1)',
+                          boxShadow:
+                            currentStep >= 2 && existsInLeaderboard === true
+                              ? '0 6px 20px rgba(139, 92, 246, 0.4)'
+                              : 'none',
+                        },
+                        '&:disabled': {
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          color: 'rgba(255, 255, 255, 0.3)',
+                        },
+                      }}
+                    >
+                      {isCheckingLeaderboard
+                        ? 'Checking account eligibility...'
+                        : !existsInLeaderboard
+                        ? 'Not eligible for airdrop'
+                        : 'Connect Wallet'}
+                    </Button>
+                    {isCheckingLeaderboard && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          display: 'block',
+                          color: 'rgba(255, 255, 255, 0.5)',
+                          mt: 1,
+                        }}
+                      >
+                        Verifying account eligibility...
+                      </Typography>
+                    )}
+                    {!existsInLeaderboard && !isCheckingLeaderboard && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          display: 'block',
+                          color: 'rgba(239, 68, 68, 0.8)',
+                          mt: 1,
+                        }}
+                      >
+                        Your account is not part of the JELLU leaderboard
+                      </Typography>
+                    )}
+                    {existsInLeaderboard === true && !alreadySubmittedDoc && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          display: 'block',
+                          color: 'rgba(34, 197, 94, 0.8)',
+                          mt: 1,
+                        }}
+                      >
+                        You are eligible for the JELLU Airdrop
+                      </Typography>
+                    )}
+                  </>
                 )}
               </Box>
             )}
           </Box>
 
           {/* Success Message */}
-          {currentStep >= 3 && (
+
+          {alreadySubmittedDoc && (
             <Box
               sx={{
-                // mt: 4,
+                my: 2,
+                ml: 7,
+                p: 2,
+                background: 'rgba(34, 197, 94, 0.1)',
+                borderRadius: '10px',
+                border: '1px solid rgba(34, 197, 94, 0.3)',
+
+                display: 'flex',
+                gap: 2,
+                alignItems: 'center',
+              }}
+            >
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'rgba(34, 197, 94, 0.8)',
+                  fontSize: '0.75rem',
+                  display: 'block',
+                }}
+              >
+                Currently Submitted:
+              </Typography>
+              <Typography
+                sx={{
+                  color: 'rgb(34, 197, 94)',
+                  fontWeight: 'bold',
+                  fontSize: '0.9rem',
+                }}
+              >
+                {alreadySubmittedDoc.connectedWalletAddress?.slice(0, 6)}
+                ...
+                {alreadySubmittedDoc.connectedWalletAddress?.slice(-4)}
+              </Typography>
+            </Box>
+          )}
+          {currentStep >= 3 && existsInLeaderboard !== false && (
+            <Box
+              sx={{
                 pt: 3,
-                // background: 'rgba(139, 92, 246, 0.1)',
-                // borderRadius: '15px',
-                // border: '1px solid rgba(139, 92, 246, 0.3)',
                 textAlign: 'center',
               }}
             >
@@ -490,17 +605,14 @@ export default function App() {
                 variant="contained"
                 onClick={async () => {
                   if (!twitterUser || !primaryWallet || isSubmitting) {
-                    alert('Please connect your X account and staking wallet');
+                    alert('Please connect your X account and wallet');
+                    return;
+                  }
+                  if (!existsInLeaderboard) {
+                    alert('This wallet is not eligible for airdrop');
                     return;
                   }
                   setIsSubmitting(true);
-                  const stakingInfo = await getSangStakingStatus(
-                    primaryWallet.address
-                  );
-                  if (!stakingInfo?.hasMinimumStake) {
-                    alert('Please stake at least 10,000 SANG tokens');
-                    return;
-                  }
                   const twitterInfo = twitterUser.providerData.find(
                     (p) => p.providerId === 'twitter.com'
                   );
@@ -508,28 +620,31 @@ export default function App() {
                     return alert('Something went wrong, try again later');
                   const username =
                     (twitterUser as any).reloadUserInfo?.screenName || '';
-                  await addToTwitterWalletAccounts(twitterInfo.uid, {
-                    twitterId: twitterInfo.uid || '',
-                    name: twitterInfo.displayName,
-                    username: username,
-                    connectedWalletAddress: primaryWallet.address,
-                    projectId: 'adam_songjam',
-                    stakedBalance: stakingInfo.balance,
-                  });
+                  await addToTwitterWalletAccounts(
+                    `${twitterInfo.uid}_${projectId}`,
+                    {
+                      twitterId: twitterInfo.uid || '',
+                      name: twitterInfo.displayName,
+                      username: username,
+                      connectedWalletAddress: primaryWallet.address,
+                      projectId,
+                      stakedBalance: '',
+                    }
+                  );
                   try {
                     await axios.post(
                       `${
                         import.meta.env.VITE_JAM_SERVER_URL
                       }/update-leaderboard`,
                       {
-                        projectId: 'adam_songjam',
+                        projectId,
                       }
                     );
                   } catch (e) {}
                   setIsSubmitting(false);
                   toast.success('Wallet submitted successfully');
                 }}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !!alreadySubmittedDoc}
                 sx={{
                   background: 'linear-gradient(45deg, #8B5CF6, #EC4899)',
                   color: 'white',
@@ -550,65 +665,11 @@ export default function App() {
                   },
                 }}
               >
-                Submit
+                {alreadySubmittedDoc ? 'Submitted Successfully' : 'Submit'}
               </Button>
             </Box>
           )}
         </Paper>
-
-        {/* Staking Section */}
-        <Box
-          sx={{
-            mt: 4,
-            pt: 3,
-            borderTop: '1px solid rgba(139, 92, 246, 0.2)',
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{
-              color: 'white',
-              fontWeight: 'bold',
-              textAlign: 'center',
-              mb: 2,
-            }}
-          >
-            Need to Stake $SANG?
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              color: 'rgba(255, 255, 255, 0.7)',
-              textAlign: 'center',
-              mb: 3,
-              lineHeight: 1.6,
-            }}
-          >
-            Stake at least 10,000 $SANG tokens to participate in the leaderboard
-            and earn multipliers.
-          </Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Button
-              variant="outlined"
-              onClick={() => navigate('/stake')}
-              sx={{
-                color: 'white',
-                px: 4,
-                py: 1.5,
-                fontWeight: 'bold',
-                textTransform: 'none',
-                fontSize: '1rem',
-                boxShadow: '0 4px 15px rgba(139, 92, 246, 0.3)',
-                '&:hover': {
-                  background: 'linear-gradient(45deg, #7c3aed, #db2777)',
-                  boxShadow: '0 6px 20px rgba(139, 92, 246, 0.4)',
-                },
-              }}
-            >
-              Stake $SANG
-            </Button>
-          </Box>
-        </Box>
       </Container>
 
       <Toaster position="bottom-center" />
