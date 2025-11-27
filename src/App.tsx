@@ -37,8 +37,14 @@ export default function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setIsLoading(false);
+      const twitterInfo = user?.providerData.find(
+        (p) => p.providerId === 'twitter.com'
+      );
+      if (!twitterInfo) {
+        return;
+      }
       const twitterWallet = await getTwitterWalletById(
-        user?.uid || '',
+        twitterInfo.uid || '',
         'adam_songjam'
       );
       setTwitterUser(user);
@@ -491,6 +497,14 @@ export default function App() {
                 onClick={async () => {
                   if (!twitterUser || !primaryWallet || isSubmitting) {
                     alert('Please connect your X account and staking wallet');
+                    return;
+                  }
+                  if (
+                    alreadySubmittedDoc &&
+                    alreadySubmittedDoc.connectedWalletAddress ===
+                      primaryWallet.address
+                  ) {
+                    alert('You have already submitted your wallet');
                     return;
                   }
                   setIsSubmitting(true);
