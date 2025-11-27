@@ -517,14 +517,24 @@ export default function App() {
                     stakedBalance: stakingInfo.balance,
                   });
                   try {
-                    await axios.post(
-                      `${
-                        import.meta.env.VITE_JAM_SERVER_URL
-                      }/update-leaderboard`,
-                      {
-                        projectId: 'adam_songjam',
-                      }
-                    );
+                    await Promise.all([
+                      axios.post(
+                        `${
+                          import.meta.env.VITE_JAM_SERVER_URL
+                        }/leaderboard/update-leaderboard`,
+                        {
+                          projectId: 'adam_songjam',
+                        }
+                      ),
+                      axios.post(
+                        `${
+                          import.meta.env.VITE_JAM_SERVER_URL
+                        }/leaderboard/update-leaderboard`,
+                        {
+                          projectId: 'undonewatches',
+                        }
+                      ),
+                    ]);
                   } catch (e) {}
                   setIsSubmitting(false);
                   toast.success('Wallet submitted successfully');
