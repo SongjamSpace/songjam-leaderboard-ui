@@ -1,4 +1,4 @@
-import { doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, serverTimestamp, updateDoc, where } from 'firebase/firestore';
 
 import { setDoc } from 'firebase/firestore';
 import { db } from '../firebase.service';
@@ -145,4 +145,15 @@ export const getTwitterWalletById = async (
     return docSs.data() as TwitterAccountWalletAddress;
   }
   return null;
+};
+
+export const updateStakedBalance = async (address: string, balance: string) => {
+  const docRef = query(collection(db, 'twitterWalletAccounts'), where('connectedWalletAddress', '==', address));
+  const docSs = await getDocs(docRef);
+  if (docSs.docs.length > 0) {
+    const docId = docSs.docs.find((doc) => doc.data().projectId === 'adam_songjam')?.id;
+    if (!docId) return;
+    const docRef = doc(db, 'twitterWalletAccounts', docId);
+    await updateDoc(docRef, { stakedBalance: balance });
+  }
 };

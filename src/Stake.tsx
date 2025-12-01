@@ -18,6 +18,7 @@ import {
   SangStakingInfo,
 } from './services/sang.service';
 import { base } from 'viem/chains';
+import { updateStakedBalance } from './services/db/sangClaim.service';
 
 export const Stake = () => {
   const { wallets } = useWallets();
@@ -232,8 +233,8 @@ export const Stake = () => {
                     {isLoadingBalance
                       ? 'Loading...'
                       : sangBalance
-                      ? `${parseFloat(sangBalance.formattedBalance).toFixed(2)}`
-                      : '0.00'}
+                        ? `${parseFloat(sangBalance.formattedBalance).toFixed(2)}`
+                        : '0.00'}
                   </Typography>
                   <Typography
                     variant="caption"
@@ -268,10 +269,10 @@ export const Stake = () => {
                     {isLoadingBalance
                       ? 'Loading...'
                       : sangStakingStatus
-                      ? `${parseFloat(
+                        ? `${parseFloat(
                           sangStakingStatus.formattedBalance
                         ).toFixed(2)}`
-                      : '0.00'}
+                        : '0.00'}
                   </Typography>
                   <Typography
                     variant="caption"
@@ -482,6 +483,11 @@ export const Stake = () => {
                       setStakeAmount('');
                       setIsApproved(false);
                       // Refresh balance after successful staking
+                      // Update staked balance in db
+                      await updateStakedBalance(
+                        primaryWallet.address,
+                        stakeAmount
+                      );
                       await fetchSangBalance();
                     } else {
                       toast.error(result.error || 'Failed to stake');
@@ -491,7 +497,7 @@ export const Stake = () => {
                   toast.dismiss();
                   toast.error(
                     e?.message ||
-                      `Failed to ${isApproved ? 'stake' : 'approve'}`
+                    `Failed to ${isApproved ? 'stake' : 'approve'}`
                   );
                 } finally {
                   setIsStaking(false);
@@ -510,10 +516,10 @@ export const Stake = () => {
               {isApproving
                 ? 'Approving…'
                 : isStaking
-                ? 'Staking…'
-                : isApproved
-                ? 'Stake'
-                : 'Approve'}
+                  ? 'Staking…'
+                  : isApproved
+                    ? 'Stake'
+                    : 'Approve'}
             </Button>
           </Box>
         )}

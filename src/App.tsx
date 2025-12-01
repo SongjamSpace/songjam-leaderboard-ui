@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
 import './App.css';
 import { Box, Container, Typography, Paper, Button } from '@mui/material';
 import { CheckCircle } from '@mui/icons-material';
@@ -300,8 +301,8 @@ export default function App() {
                     currentStep >= 3
                       ? 'linear-gradient(45deg, #8B5CF6, #EC4899)'
                       : currentStep >= 2
-                      ? 'rgba(139, 92, 246, 0.3)'
-                      : 'rgba(139, 92, 246, 0.1)',
+                        ? 'rgba(139, 92, 246, 0.3)'
+                        : 'rgba(139, 92, 246, 0.1)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -335,31 +336,62 @@ export default function App() {
                   border: '1px solid rgba(34, 197, 94, 0.3)',
 
                   display: 'flex',
-                  gap: 2,
-                  alignItems: 'center',
+                  flexDirection: 'column',
+                  gap: 1,
+                  alignItems: 'flex-start',
                 }}
               >
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: 'rgba(34, 197, 94, 0.8)',
-                    fontSize: '0.75rem',
-                    display: 'block',
-                  }}
-                >
-                  Currently Submitted:
-                </Typography>
-                <Typography
-                  sx={{
-                    color: 'rgb(34, 197, 94)',
-                    fontWeight: 'bold',
-                    fontSize: '0.9rem',
-                  }}
-                >
-                  {alreadySubmittedDoc.connectedWalletAddress?.slice(0, 6)}
-                  ...
-                  {alreadySubmittedDoc.connectedWalletAddress?.slice(-4)}
-                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: 'rgba(34, 197, 94, 0.8)',
+                      fontSize: '0.75rem',
+                      display: 'block',
+                    }}
+                  >
+                    Currently Submitted:
+                  </Typography>
+                  <Typography
+                    sx={{
+                      color: 'rgb(34, 197, 94)',
+                      fontWeight: 'bold',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    {alreadySubmittedDoc.connectedWalletAddress?.slice(0, 6)}
+                    ...
+                    {alreadySubmittedDoc.connectedWalletAddress?.slice(-4)}
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: 'rgba(34, 197, 94, 0.8)',
+                      fontSize: '0.75rem',
+                      display: 'block',
+                    }}
+                  >
+                    Stake Balance:
+                  </Typography>
+                  <Typography
+                    sx={{
+                      color: 'rgb(34, 197, 94)',
+                      fontWeight: 'bold',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    {parseFloat(
+                      ethers.formatUnits(
+                        alreadySubmittedDoc.stakedBalance || '0',
+                        18
+                      )
+                    ).toLocaleString()}{' '}
+                    SANG
+                  </Typography>
+                </Box>
               </Box>
             )}
 
@@ -502,7 +534,7 @@ export default function App() {
                   if (
                     alreadySubmittedDoc &&
                     alreadySubmittedDoc.connectedWalletAddress ===
-                      primaryWallet.address
+                    primaryWallet.address
                   ) {
                     alert('You have already submitted your wallet');
                     return;
@@ -574,7 +606,7 @@ export default function App() {
                   },
                 }}
               >
-                Submit
+                {alreadySubmittedDoc ? 'Update' : 'Submit'}
               </Button>
             </Box>
           )}
