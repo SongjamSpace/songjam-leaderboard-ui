@@ -38,8 +38,8 @@ export const Stake = () => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const fetchSangBalance = async () => {
-    if (!primaryWallet?.address) return;
+  const fetchSangBalance = async (): Promise<SangBalanceInfo | null> => {
+    if (!primaryWallet?.address) return null;
 
     setIsLoadingBalance(true);
     try {
@@ -49,11 +49,13 @@ export const Stake = () => {
       ]);
       setSangBalance(balance);
       setSangStakingStatus(stakingStatus);
+      setIsLoadingBalance(false);
+      return balance;
     } catch (error) {
       console.error('Error fetching SANG balance:', error);
       toast.error('Failed to fetch SANG balance');
-    } finally {
       setIsLoadingBalance(false);
+      return null;
     }
   };
 
@@ -233,8 +235,8 @@ export const Stake = () => {
                     {isLoadingBalance
                       ? 'Loading...'
                       : sangBalance
-                        ? `${parseFloat(sangBalance.formattedBalance).toFixed(2)}`
-                        : '0.00'}
+                      ? `${parseFloat(sangBalance.formattedBalance).toFixed(2)}`
+                      : '0.00'}
                   </Typography>
                   <Typography
                     variant="caption"
@@ -269,10 +271,10 @@ export const Stake = () => {
                     {isLoadingBalance
                       ? 'Loading...'
                       : sangStakingStatus
-                        ? `${parseFloat(
+                      ? `${parseFloat(
                           sangStakingStatus.formattedBalance
                         ).toFixed(2)}`
-                        : '0.00'}
+                      : '0.00'}
                   </Typography>
                   <Typography
                     variant="caption"
@@ -483,12 +485,14 @@ export const Stake = () => {
                       setStakeAmount('');
                       setIsApproved(false);
                       // Refresh balance after successful staking
-                      // Update staked balance in db
-                      await updateStakedBalance(
-                        primaryWallet.address,
-                        stakeAmount
-                      );
-                      await fetchSangBalance();
+                      const sangBalance = await fetchSangBalance();
+                      if (sangBalance) {
+                        // Update staked balance in db
+                        await updateStakedBalance(
+                          primaryWallet.address,
+                          sangBalance.balance
+                        );
+                      }
                     } else {
                       toast.error(result.error || 'Failed to stake');
                     }
@@ -497,7 +501,7 @@ export const Stake = () => {
                   toast.dismiss();
                   toast.error(
                     e?.message ||
-                    `Failed to ${isApproved ? 'stake' : 'approve'}`
+                      `Failed to ${isApproved ? 'stake' : 'approve'}`
                   );
                 } finally {
                   setIsStaking(false);
@@ -516,10 +520,10 @@ export const Stake = () => {
               {isApproving
                 ? 'Approving…'
                 : isStaking
-                  ? 'Staking…'
-                  : isApproved
-                    ? 'Stake'
-                    : 'Approve'}
+                ? 'Staking…'
+                : isApproved
+                ? 'Stake'
+                : 'Approve'}
             </Button>
           </Box>
         )}
