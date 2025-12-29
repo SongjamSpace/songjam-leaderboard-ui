@@ -34,6 +34,17 @@ export default function App() {
   const [hasAttemptedAutoConnect, setHasAttemptedAutoConnect] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const fetchTwitterWallet = async (twitterId?: string) => {
+    if (!twitterId) return;
+    const twitterWallet = await getTwitterWalletById(
+      twitterId,
+      'adam_songjam'
+    );
+    if (twitterWallet) {
+      setAlreadySubmittedDoc(twitterWallet);
+    }
+  };
+
   // Listen to auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -44,14 +55,8 @@ export default function App() {
       if (!twitterInfo) {
         return;
       }
-      const twitterWallet = await getTwitterWalletById(
-        twitterInfo.uid || '',
-        'adam_songjam'
-      );
+      await fetchTwitterWallet(twitterInfo.uid);
       setTwitterUser(user);
-      if (twitterWallet) {
-        setAlreadySubmittedDoc(twitterWallet);
-      }
     });
     return () => unsubscribe();
   }, []);
@@ -65,8 +70,6 @@ export default function App() {
       console.error('Twitter sign-in error:', error);
     }
   };
-
-  console.log({ twitterUser });
 
   const currentStep = twitterUser ? (primaryWallet ? 3 : 2) : 1;
 
@@ -543,10 +546,10 @@ export default function App() {
                   const stakingInfo = await getSangStakingStatus(
                     primaryWallet.address
                   );
-                  if (!stakingInfo?.hasMinimumStake) {
-                    alert('Please stake at least 10,000 SANG tokens');
-                    return;
-                  }
+                  // if (!stakingInfo?.hasMinimumStake) {
+                  //   alert('Please stake at least 10,000 SANG tokens');
+                  //   return;
+                  // }
                   const twitterInfo = twitterUser.providerData.find(
                     (p) => p.providerId === 'twitter.com'
                   );
@@ -560,8 +563,13 @@ export default function App() {
                     username: username,
                     connectedWalletAddress: primaryWallet.address,
                     projectId: 'adam_songjam',
+                    secondaryProjectId: 'bettercallzaal',
                     stakedBalance: stakingInfo.balance,
                   });
+                  // Settimeout:
+                  setTimeout(() => {
+                    fetchTwitterWallet(twitterInfo.uid);
+                  }, 1000);
                   // try {
                   //   await Promise.all([
                   //     axios.post(
