@@ -648,7 +648,7 @@ export default function App() {
               lineHeight: 1.6,
             }}
           >
-            Stake at least 10,000 $SANG tokens to participate in the leaderboard
+            Stake $SANG tokens to participate in the leaderboard
             and earn multipliers.
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
